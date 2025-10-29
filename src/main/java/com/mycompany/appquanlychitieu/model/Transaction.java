@@ -10,68 +10,66 @@ import java.time.LocalDate;
  * @author Duck
  */
 public class Transaction {
-    private long Id, user_Id;
-    private int category_Id;
+    private String trans_id, user_id, category_id, trans_type, note;
     private BigDecimal amount;
-    private String type, note;
     private LocalDate date;
     
-    public Transaction(long Id, long user_Id, int category_Id, BigDecimal amount, String type, String note, LocalDate date ){
-        this.Id = Id;
-        this.user_Id = user_Id;
-        this.category_Id = category_Id;
-        this.amount = amount;
-        this.type = type;
+    private static long stt = 0;
+    
+    public Transaction(String user_id, String category_id, BigDecimal amount, String trans_type, String note, LocalDate date ){
+        this.trans_id = "GD" + String.format("%d", ++stt);
+        setUser_id(user_id);
+        setCategory_id(category_id);
+        setAmount(amount);
+        setTrans_type(trans_type);
         this.note = note;
-        this.date = date;
+        setDate(date);
     }
 
-    public long getId() {
-        return Id;
+    public String getTrans_id() {
+        return trans_id;
     }
 
-    public void setId(long Id) {
-        this.Id = Id;
+    public String getUser_id() {
+        return user_id;
     }
 
-    public long getUser_Id() {
-        return user_Id;
+    public void setUser_id(String user_Id) {
+        if(!user_id.equals("")) 
+            this.user_id = user_id;
     }
 
-    public void setUser_Id(long user_Id) {
-        this.user_Id = user_Id;
+    public String getCategory_id() {
+        return this.category_id;
     }
 
-    public int getCategory_Id() {
-        return category_Id;
-    }
-
-    public void setCategory_Id(int category_Id) {
-        this.category_Id = category_Id;
+    public void setCategory_id(String category_id) {
+        if(!category_id.equals(""))
+            this.category_id = category_id;
     }
 
     public BigDecimal getAmount() {
         return amount;
     }
-
+    
     public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+        if(amount.compareTo(BigDecimal.ZERO) > 0)
+            this.amount = amount;
     }
 
-    public String getType() {
-        return type;
+    public String getTrans_type() {
+        return trans_type;
     }
 
-    public void setType(String type) {
-        this.type = type;
+public void setTrans_type(String trans_type) {
+    if (trans_type.equalsIgnoreCase("Thu") || trans_type.equalsIgnoreCase("Chi")) {
+        this.trans_type = trans_type;
+    } else {
+        System.out.println("Loại giao dịch không hợp lệ! Chỉ chấp nhận 'Thu' hoặc 'Chi'.");
     }
-
+}
     public String getNote() {
         return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 
     public LocalDate getDate() {
@@ -79,26 +77,30 @@ public class Transaction {
     }
 
     public void setDate(LocalDate date) {
-        this.date = date;
+        if(date != null && !date.isAfter(LocalDate.now()))
+            this.date = date;
+        else{
+            System.out.println("Ngày nhập vào không hợp lệ!");
+            }
     }
     
     public void deleteTransaction(){
-        this.Id = 0;
-        this.user_Id = 0;
-        this.category_Id = 0;
+        this.trans_id = "";
+        this.user_id = "";
+        this.category_id = "";
         this.amount = BigDecimal.ZERO;
-        this.type = "";
+        this.trans_type = "";
         this.note = "";
         this.date = LocalDate.now();
     }
     @Override
     public String toString() {
         return "Transaction{" +
-                "id=" + Id +
-                ", userId=" + user_Id +
-                ", category_Id=" + category_Id +
+                "id=" + trans_id +
+                ", userId=" + user_id +
+                ", category_Id=" + category_id +
                 ", amount=" + amount +
-                ", type='" + type + '\'' +
+                ", type='" + trans_type + '\'' +
                 ", date=" + date +
                 ", note='" + note + '\'' +
                 '}';
