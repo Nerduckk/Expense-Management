@@ -1,51 +1,75 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.appquanlychitieu.model;
 
-/**
- *
- * @author Duck
- */
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+
 public class Category {
-     private int id;
+    private static int seq = 0;
+
+    private int id;
     private String name;
     private String description;
 
-    public Category() {}
+    public Category() {
+        this.id = ++seq;
+        this.name = "";
+        this.description = "";
+    }
 
     public Category(int id, String name, String description) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
+        setId(id);
+        setName(name);
+        setDescription(description);
+        if (id > seq) seq = id;
+    }
+
+    public Category(String name, String description) {
+        this.id = ++seq;
+        setName(name);
+        setDescription(description);
     }
 
     public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public void setId(int id) {
+        if (id <= 0) throw new IllegalArgumentException("id phải > 0");
+        this.id = id;
+    }
 
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("name trống");
+        this.name = name.trim();
+    }
 
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) {
+        this.description = (description == null) ? "" : description.trim();
+    }
 
     public void createCategory(String name, String des) {
-        this.name = name;
-        this.description = des;
-        System.out.println("Category created: " + name);
+        setName(name);
+        setDescription(des);
     }
 
     public void updateDetails(String new_name, String new_des) {
-        this.name = new_name;
-        this.description = new_des;
-        System.out.println("Category updated: " + new_name);
+        setName(new_name);
+        setDescription(new_des);
+    }
+
+    public BigDecimal getTotalSpent(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null || endDate.isBefore(startDate))
+            throw new IllegalArgumentException("Khoảng ngày không hợp lệ");
+        return BigDecimal.ZERO;
     }
 
     public double getTotalSpent(String startDate, String endDate) {
-        // Giả lập tính tổng chi tiêu trong khoảng thời gian
-        System.out.println("Calculating total spent from " + startDate + " to " + endDate);
         return 0.0;
+    }
+
+    public void deleteCategory() {
+        this.name = "";
+        this.description = "";
     }
 
     @Override
@@ -55,5 +79,18 @@ public class Category {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Category)) return false;
+        Category category = (Category) o;
+        return id == category.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
