@@ -17,15 +17,34 @@ public class User {
         this.username=username;
         this.password=password;
     }
-    public long getID(long ID){
+    
+    public long getID() {
         return ID;
     }
-    public String getusername(String username){
+
+    public String getUsername() {
         return username;
-    } 
-    public String getpassword(String password){
+    }
+
+    public String getPassword() {
         return password;
     }
+
+    public void setID(long ID) {
+        if (ID>0)
+            this.ID = ID;
+    }
+
+    public void setUsername(String username) {
+        if (!username.equals(""))
+            this.username = username;
+    }
+
+    public void setPassword(String password) {
+        if (!password.equals(""))
+            this.password = password;
+    }
+    
     public void login(){
         Scanner sc= new Scanner(System.in);
         System.out.print("username: ");
