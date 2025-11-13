@@ -33,7 +33,7 @@ public class Loan {
     }
 
     public Transaction ghiNhanGiaiNgan(LocalDate ngay, BigDecimal soTien) {
-        long transactionId = 0L; // Giả lập ID
+        long transactionId = 0L; 
         String description = "Giải ngân khoản vay ID: " + this.id;
         System.out.println("Ghi nhận giải ngân: " + soTien + " (INCOME) vào ngày " + ngay);
         
