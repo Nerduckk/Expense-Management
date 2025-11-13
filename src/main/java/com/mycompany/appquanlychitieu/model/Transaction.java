@@ -106,5 +106,3 @@ public void setTrans_type(String trans_type) {
                 '}';
     }
 }  
-
-test
