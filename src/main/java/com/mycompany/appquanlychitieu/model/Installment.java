@@ -9,10 +9,10 @@ import java.time.LocalDate;
  *
  * @author Duck
  */
-enum CategoryType{
-    INCOME,
-    EXPENSE
-}
+//enum CategoryType{
+//    INCOME,
+//    EXPENSE
+//}
 public class Installment {
     private long id,accountId, categoryId;
     private int terms, paidTerms;
@@ -40,7 +40,8 @@ public class Installment {
     }
 
     public void setId(long id) {
-        this.id = id;
+        if(id > 0)
+            this.id = id;
     }
 
     public long getAccountId() {
@@ -48,7 +49,8 @@ public class Installment {
     }
 
     public void setAccountId(long accountId) {
-        this.accountId = accountId;
+        if(accountId > 0)
+            this.accountId = accountId;
     }
 
     public long getCategoryId() {
@@ -56,7 +58,8 @@ public class Installment {
     }
 
     public void setCategoryId(long categoryId) {
-        this.categoryId = categoryId;
+        if(categoryId > 0)
+            this.categoryId = categoryId;
     }
 
     public int getTerms() {
@@ -64,7 +67,8 @@ public class Installment {
     }
 
     public void setTerms(int terms) {
-        this.terms = terms;
+        if(terms > 0)
+            this.terms = terms;
     }
 
     public int getPaidTerms() {
@@ -72,7 +76,8 @@ public class Installment {
     }
 
     public void setPaidTerms(int paidTerms) {
-        this.paidTerms = paidTerms;
+        if(paidTerms > 0)
+            this.paidTerms = paidTerms;
     }
 
     public String getItem() {
@@ -80,7 +85,8 @@ public class Installment {
     }
 
     public void setItem(String item) {
-        this.item = item;
+        if(!item.equals(""))
+            this.item = item;
     }
 
     public String getStatus() {
@@ -88,7 +94,8 @@ public class Installment {
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        if(!status.equals(""))
+            this.status = status;
     }
 
     public String getNote() {
@@ -96,7 +103,8 @@ public class Installment {
     }
 
     public void setNote(String note) {
-        this.note = note;
+        if(!note.equals(""))
+            this.note = note;
     }
 
     public BigDecimal getTotal() {
@@ -104,7 +112,8 @@ public class Installment {
     }
 
     public void setTotal(BigDecimal total) {
-        this.total = total;
+        if(!total.equals(BigDecimal.ZERO))
+            this.total = total;
     }
 
     public BigDecimal getAmountPerTerm() {
@@ -112,7 +121,8 @@ public class Installment {
     }
 
     public void setAmountPerTerm(BigDecimal amountPerTerm) {
-        this.amountPerTerm = amountPerTerm;
+        if(!amountPerTerm.equals(BigDecimal.ZERO))
+            this.amountPerTerm = amountPerTerm;
     }
 
     public LocalDate getStartDate() {
@@ -120,9 +130,12 @@ public class Installment {
     }
 
     public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+        if(startDate != null && !startDate.isAfter(LocalDate.now()))
+            this.startDate = startDate;
+        else{
+            System.out.println("Ngay nhap vao khong hop le!");
+            }
     }
-    
     
     public Transaction payTerm(LocalDate ngay){
         if(hoanTat()){
