@@ -47,7 +47,7 @@ public class Transaction {
     }
 
     public void setAccountId(long accountId) {
-        if(accountId != 0) 
+        if(accountId > 0) 
             this.accountId = accountId;
     }
 
@@ -56,7 +56,7 @@ public class Transaction {
     }
 
     public void setCategoryId(long categoryId) {
-        if(categoryId != 0)
+        if(categoryId > 0)
             this.categoryId = categoryId;
     }
 
@@ -83,7 +83,7 @@ public class Transaction {
     }
 
     public void setNote(String note) {
-        if(!this.note.equals(""))
+        if(!note.equals(""))
             this.note = note;
     }
     
@@ -95,7 +95,7 @@ public class Transaction {
         if(date != null && !date.isAfter(LocalDate.now()))
             this.date = date;
         else{
-            System.out.println("Ngày nhập vào không hợp lệ!");
+            System.out.println("Ngay nhap vao khong hop le!");
             }
     }
 
@@ -104,7 +104,7 @@ public class Transaction {
     }
 
     public void setTag(String tag) {
-        if(!this.tag.equals(""))
+        if(!tag.equals(""))
             this.tag = tag;
     }
 
@@ -113,7 +113,7 @@ public class Transaction {
     }
 
     public void setReceiptPath(String receiptPath) {
-        if(!this.receiptPath.equals(""))
+        if(!receiptPath.equals(""))
             this.receiptPath = receiptPath;
     }
     
