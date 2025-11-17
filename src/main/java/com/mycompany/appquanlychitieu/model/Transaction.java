@@ -5,47 +5,59 @@
 package com.mycompany.appquanlychitieu.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 /**
  *
  * @author Duck
  */
+enum CategoryType{
+    INCOME,
+    EXPENSE
+}
 public class Transaction {
-    private String trans_id, user_id, category_id, trans_type, note;
+    private long id, accountId, categoryId;
+    private String tag, note, receiptPath;
+    private CategoryType type;
     private BigDecimal amount;
     private LocalDate date;
     
     private static long stt = 0;
     
-    public Transaction(String user_id, String category_id, BigDecimal amount, String trans_type, String note, LocalDate date ){
-        this.trans_id = "GD" + String.format("%d", ++stt);
-        setUser_id(user_id);
-        setCategory_id(category_id);
-        setAmount(amount);
-        setTrans_type(trans_type);
-        this.note = note;
+    public Transaction(LocalDate date, BigDecimal amount, CategoryType type,
+                       long categoryId, long accountId, String note,
+                       String tag, String receiptPath){
+        this.id = ++stt;
         setDate(date);
+        setAmount(amount);
+        setType(type);
+        setAccountId(accountId);
+        setCategoryId(categoryId);
+        setAccountId(accountId);
+        setNote(note);
+        setTag(tag);
+        setReceiptPath(receiptPath);
     }
 
-    public String getTrans_id() {
-        return trans_id;
+    public long getId() {
+        return id;
     }
 
-    public String getUser_id() {
-        return user_id;
+    public long getAccountId() {
+        return accountId;
     }
 
-    public void setUser_id(String user_Id) {
-        if(!user_id.equals("")) 
-            this.user_id = user_id;
+    public void setAccountId(long accountId) {
+        if(accountId != 0) 
+            this.accountId = accountId;
     }
 
-    public String getCategory_id() {
-        return this.category_id;
+    public long getCategoryId() {
+        return this.categoryId;
     }
 
-    public void setCategory_id(String category_id) {
-        if(!category_id.equals(""))
-            this.category_id = category_id;
+    public void setCategoryId(long categoryId) {
+        if(categoryId != 0)
+            this.categoryId = categoryId;
     }
 
     public BigDecimal getAmount() {
@@ -57,21 +69,24 @@ public class Transaction {
             this.amount = amount;
     }
 
-    public String getTrans_type() {
-        return trans_type;
+    public CategoryType getType() {
+        return type;
     }
 
-public void setTrans_type(String trans_type) {
-    if (trans_type.equalsIgnoreCase("Thu") || trans_type.equalsIgnoreCase("Chi")) {
-        this.trans_type = trans_type;
-    } else {
-        System.out.println("Loại giao dịch không hợp lệ! Chỉ chấp nhận 'Thu' hoặc 'Chi'.");
+    public void setType(CategoryType type) {
+        if(!Objects.equals(this.type, type))
+            this.type = type;
     }
-}
+    
     public String getNote() {
         return note;
     }
 
+    public void setNote(String note) {
+        if(!this.note.equals(note))
+            this.note = note;
+    }
+    
     public LocalDate getDate() {
         return date;
     }
@@ -83,28 +98,36 @@ public void setTrans_type(String trans_type) {
             System.out.println("Ngày nhập vào không hợp lệ!");
             }
     }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        if(!this.tag.equals(tag))
+            this.tag = tag;
+    }
+
+    public String getReceiptPath() {
+        return receiptPath;
+    }
+
+    public void setReceiptPath(String receiptPath) {
+        if(!this.receiptPath.equals(receiptPath))
+            this.receiptPath = receiptPath;
+    }
     
-    public void deleteTransaction(){
-        this.trans_id = "";
-        this.user_id = "";
-        this.category_id = "";
-        this.amount = BigDecimal.ZERO;
-        this.trans_type = "";
-        this.note = "";
-        this.date = LocalDate.now();
+    public boolean laThu(){
+        return this.type == CategoryType.INCOME;
+    }
+    
+    public boolean laChi(){
+        return this.type == CategoryType.EXPENSE;
     }
     @Override
     public String toString() {
-        return "Transaction{" +
-                "id=" + trans_id +
-                ", userId=" + user_id +
-                ", category_Id=" + category_id +
-                ", amount=" + amount +
-                ", type='" + trans_type + '\'' +
-                ", date=" + date +
-                ", note='" + note + '\'' +
-                '}';
+        return String.format("Giao dich[ID=%d, Ngay=%s, Loai=%s, So tien=%s, Note=%s]", 
+                             id, date, type, amount, note);
     }
 }  
 
-test
