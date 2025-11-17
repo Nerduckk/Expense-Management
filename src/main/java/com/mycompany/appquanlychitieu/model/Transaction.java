@@ -74,7 +74,7 @@ public class Transaction {
     }
 
     public void setType(CategoryType type) {
-        if(!Objects.equals(this.type, type))
+        if(type != null)
             this.type = type;
     }
     
@@ -83,7 +83,7 @@ public class Transaction {
     }
 
     public void setNote(String note) {
-        if(!this.note.equals(note))
+        if(!this.note.equals(""))
             this.note = note;
     }
     
@@ -104,7 +104,7 @@ public class Transaction {
     }
 
     public void setTag(String tag) {
-        if(!this.tag.equals(tag))
+        if(!this.tag.equals(""))
             this.tag = tag;
     }
 
@@ -113,7 +113,7 @@ public class Transaction {
     }
 
     public void setReceiptPath(String receiptPath) {
-        if(!this.receiptPath.equals(receiptPath))
+        if(!this.receiptPath.equals(""))
             this.receiptPath = receiptPath;
     }
     
