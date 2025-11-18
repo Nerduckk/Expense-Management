@@ -37,7 +37,8 @@ public class Subscription {
     }
 
     public void setId(long id) {
-        this.id = id;
+        if(id > 0)
+            this.id = id;
     }
 
     public long getUserId() {
@@ -45,7 +46,8 @@ public class Subscription {
     }
 
     public void setUserId(long userId) {
-        this.userId = userId;
+        if(userId > 0)
+            this.userId = userId;
     }
 
     public long getAccountId() {
@@ -53,7 +55,8 @@ public class Subscription {
     }
 
     public void setAccountId(long accountId) {
-        this.accountId = accountId;
+        if(accountId > 0)
+            this.accountId = accountId;
     }
 
     public long getCategoryId() {
@@ -61,7 +64,8 @@ public class Subscription {
     }
 
     public void setCategoryId(long categoryId) {
-        this.categoryId = categoryId;
+        if(categoryId > 0)
+            this.categoryId = categoryId;
     }
 
     public String getName() {
@@ -69,7 +73,8 @@ public class Subscription {
     }
 
     public void setName(String name) {
-        this.name = name;
+        if(!name.equals(""))
+            this.name = name;
     }
 
     public CycleType getCycle() {
@@ -77,7 +82,8 @@ public class Subscription {
     }
 
     public void setCycle(CycleType cycle) {
-        this.cycle = cycle;
+        if(cycle != null)
+            this.cycle = cycle;
     }
 
     public String getNote() {
@@ -85,7 +91,8 @@ public class Subscription {
     }
 
     public void setNote(String note) {
-        this.note = note;
+        if(!note.equals(""))
+            this.note = note;
     }
 
     public BigDecimal getAmount() {
@@ -93,7 +100,8 @@ public class Subscription {
     }
 
     public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+        if(!amount.equals(BigDecimal.ZERO))
+            this.amount = amount;
     }
 
     public LocalDate getNextDue() {
@@ -101,7 +109,11 @@ public class Subscription {
     }
 
     public void setNextDue(LocalDate nextDue) {
-        this.nextDue = nextDue;
+        if(nextDue != null && !nextDue.isBefore(LocalDate.now()))
+            this.nextDue = nextDue;
+        else{
+            System.out.println("Ngay nhap vao khong hop le!");
+            }
     }
     
     
