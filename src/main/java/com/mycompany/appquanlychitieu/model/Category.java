@@ -8,8 +8,6 @@ package com.mycompany.appquanlychitieu.model;
  *
  * @author Hoang
  */
-import java.math.BigDecimal;
-
 public class Category extends BaseEntity {
     private CategoryType type;
     private String icon;
@@ -18,11 +16,17 @@ public class Category extends BaseEntity {
 
     public Category() {}
 
-    public Category(String name, CategoryType type, String icon, String color) {
+    public Category(String name, CategoryType type, String icon, String color, BigDecimal budgetLimit) {
         this.setName(name);
         this.type = type;
         this.icon = icon;
         this.color = color;
+        this.budgetLimit = budgetLimit;
+    }
+
+    public boolean isOverBudget(BigDecimal currentSpentAmount) {
+        if (this.budgetLimit == null || currentSpentAmount == null) return false;
+        return currentSpentAmount.compareTo(this.budgetLimit) > 0;
     }
 
     public CategoryType getType() { return type; }
