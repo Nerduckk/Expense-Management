@@ -1,3 +1,8 @@
+package com.mycompany.appquanlychitieu.model;
+/**
+ *
+ * @author Duck
+ */
 import java.math.BigDecimal;
 
 public class Account {
