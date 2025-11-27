@@ -14,7 +14,7 @@ enum CycleType{
         MONTHLY, 
         YEARLY
 };    
-public class RecurringSchedule {
+public class RecurringSchedule extends BaseEntity {
     private Account account;
     private Category category;
     private BigDecimal amount;
