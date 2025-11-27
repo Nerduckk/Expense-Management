@@ -13,46 +13,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
-abstract class BaseEntity {
-    protected Long id;
-    protected String name;
-    protected LocalDateTime createdAt;
-    protected LocalDateTime updatedAt;
-
-
-    public BaseEntity(Long id, String name) {
-        this.id = id;
-        this.name = name;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public abstract String getSummary();
-    
-    public Long getId() {
-        return id; 
-    }
-
-
-    public String getName() {
-        return name; 
-    }
-    
-    public void setName(String name) { 
-        this.name = name; 
-        
-    }
-
-    public LocalDateTime getCreatedAt() { 
-        return createdAt; 
-    }
-    public LocalDateTime getUpdatedAt() { 
-        return updatedAt;
-    }
-}
-
-
 class Account {}
 class Category {}
 class Debt {}
