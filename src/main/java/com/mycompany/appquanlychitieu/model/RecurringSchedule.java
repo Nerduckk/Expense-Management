@@ -20,11 +20,11 @@ public class RecurringSchedule {
     private BigDecimal amount;
     private CycleType cycle;
     private LocalDate startDate;
-    private int paidTerms;
+    private Integer paidTerms;
     private LocalTime reminderTime;
     private boolean autoCreate;
     private LocalDate endDate;
-    private int totalTerms;
+    private Integer totalTerms;
 
     public RecurringSchedule(Account account, Category category, BigDecimal amount, CycleType cycle, LocalDate startDate, int paidTerms, LocalTime reminderTime, boolean autoCreate, LocalDate endDate, int totalTerms) {
         setAccount(account);
@@ -84,12 +84,12 @@ public class RecurringSchedule {
             this.startDate = startDate;
     }
 
-    public int getPaidTerms() {
+    public Integer getPaidTerms() {
         return paidTerms;
     }
 
-    public void setPaidTerms(int paidTerms) {
-        if(paidTerms > 0)
+    public void setPaidTerms(Integer paidTerms) {
+        if(paidTerms != null)
             this.paidTerms = paidTerms;
     }
 
@@ -122,10 +122,21 @@ public class RecurringSchedule {
         return totalTerms;
     }
 
-    public void setTotalTerms(int totalTerms) {
+    public void setTotalTerms(Integer totalTerms) {
         this.totalTerms = totalTerms;
     }
     
     public NormalTransaction generateTxn(){
+        if(totalTerms != null && paidTerms >= totalTerms){
+                System.out.println("Da hoan thanh so ky dinh truoc.");
+                return null;
+        }    
+        NormalTransaction newTransaction = new NormalTransaction();
+
+        newTransaction.setAccount(this.account);
+        newTransaction.setCategory(this.category);
+        newTransaction.setAmount(this.amount);
+        newTransaction.setDate(LocalDate.now()); 
+        return newTransaction;
     }
 }
