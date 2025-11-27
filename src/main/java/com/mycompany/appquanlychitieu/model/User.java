@@ -60,7 +60,6 @@ public class User {
         this.id = id;
     }
 
-    // --- Name ---
     public String getName() {
         return name;
     }
