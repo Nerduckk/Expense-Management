@@ -27,13 +27,13 @@ public class RecurringSchedule {
     private int totalTerms;
 
     public RecurringSchedule(Account account, Category category, BigDecimal amount, CycleType cycle, LocalDate startDate, int paidTerms, LocalTime reminderTime, boolean autoCreate, LocalDate endDate, int totalTerms) {
-        this.account = account;
-        this.category = category;
-        this.amount = amount;
-        this.cycle = cycle;
-        this.startDate = startDate;
-        this.paidTerms = paidTerms;
-        this.reminderTime = reminderTime;
+        setAccount(account);
+        setCategory(category);
+        setAmount(amount);
+        setCycle(cycle);
+        setStartDate(startDate);
+        setPaidTerms(paidTerms);
+        setReminderTime(reminderTime);
         this.autoCreate = autoCreate;
         this.endDate = endDate;
         this.totalTerms = totalTerms;
@@ -44,7 +44,8 @@ public class RecurringSchedule {
     }
 
     public void setAccount(Account account) {
-        this.account = account;
+        if(account != null)
+            this.account = account;
     }
 
     public Category getCategory() {
@@ -52,7 +53,8 @@ public class RecurringSchedule {
     }
 
     public void setCategory(Category category) {
-        this.category = category;
+        if(category != null)
+            this.category = category;
     }
 
     public BigDecimal getAmount() {
@@ -60,7 +62,8 @@ public class RecurringSchedule {
     }
 
     public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+        if(!amount.equals(BigDecimal.ZERO))
+            this.amount = amount;
     }
 
     public CycleType getCycle() {
@@ -68,7 +71,8 @@ public class RecurringSchedule {
     }
 
     public void setCycle(CycleType cycle) {
-        this.cycle = cycle;
+        if(cycle != null)
+            this.cycle = cycle;
     }
 
     public LocalDate getStartDate() {
@@ -76,7 +80,8 @@ public class RecurringSchedule {
     }
 
     public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+        if(startDate != null)
+            this.startDate = startDate;
     }
 
     public int getPaidTerms() {
@@ -84,7 +89,8 @@ public class RecurringSchedule {
     }
 
     public void setPaidTerms(int paidTerms) {
-        this.paidTerms = paidTerms;
+        if(paidTerms > 0)
+            this.paidTerms = paidTerms;
     }
 
     public LocalTime getReminderTime() {
@@ -92,9 +98,10 @@ public class RecurringSchedule {
     }
 
     public void setReminderTime(LocalTime reminderTime) {
-        this.reminderTime = reminderTime;
+        if(reminderTime != null)
+            this.reminderTime = reminderTime;
     }
-
+        
     public boolean isAutoCreate() {
         return autoCreate;
     }
