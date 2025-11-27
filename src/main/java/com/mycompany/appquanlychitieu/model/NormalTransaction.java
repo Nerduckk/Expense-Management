@@ -6,7 +6,7 @@ package com.mycompany.appquanlychitieu.model;
 
 /**
  *
- * @author Duck
+ * @author DAT
  */
 public class NormalTransaction {
     private Account account;
