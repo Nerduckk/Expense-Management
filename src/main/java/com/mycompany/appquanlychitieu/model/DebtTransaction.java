@@ -6,8 +6,13 @@ package com.mycompany.appquanlychitieu.model;
 
 /**
  *
- * @author Duck
+ * @author 
  */
-public class DebtTransaction {
-    
+public class DebtTransaction extends NormalTransaction {
+    public Debt debt;
+
+    public DebtTransaction(BigDecimal amount, LocalDate date, Account account, Category category, Debt debt) {
+        super(amount, date, account, category);
+        this.debt = debt;
+    }
 }
