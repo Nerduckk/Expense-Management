@@ -8,7 +8,7 @@ package com.mycompany.appquanlychitieu.model;
  *
  * @author DAT
  */
-public class NormalTransaction {
+public class NormalTransaction extends AbstractTransaction{
     private Account account;
     private Category category;
     
