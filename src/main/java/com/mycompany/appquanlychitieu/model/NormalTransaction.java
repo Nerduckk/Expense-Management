@@ -13,8 +13,8 @@ public class NormalTransaction {
     private Category category;
     
     public NormalTransaction(Account account, Category category) {
-        this.account = account;
-        this.category = category;
+        setAccount(account);
+        setCategory(category);
     }
 
     public Account getAccount() {
@@ -22,7 +22,8 @@ public class NormalTransaction {
     }
 
     public void setAccount(Account account) {
-        this.account = account;
+        if(account != null)
+            this.account = account;
     }
 
     public Category getCategory() {
@@ -30,6 +31,7 @@ public class NormalTransaction {
     }
 
     public void setCategory(Category category) {
-        this.category = category;
+        if(category != null)
+            this.category = category;
     }
 }
