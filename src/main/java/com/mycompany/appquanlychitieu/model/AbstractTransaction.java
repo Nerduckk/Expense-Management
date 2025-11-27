@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.appquanlychitieu.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,12 +26,10 @@ public abstract class AbstractTransaction extends BaseEntity {
         }
         this.amount = amount;
     }
-
     public void setDate(LocalDate date) {
         if (date == null) throw new IllegalArgumentException("Ngày giao dịch không được null.");
         this.date = date;
     }
-
     public BigDecimal getAmount() { return amount; }
     public abstract boolean isIncome();
     public abstract boolean isExpense();
