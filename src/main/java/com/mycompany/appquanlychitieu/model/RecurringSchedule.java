@@ -6,7 +6,7 @@ package com.mycompany.appquanlychitieu.model;
 a
 /**
  *
- * @author Duck
+ * @author DAT
  */
 enum CycleType{
         DAILY,
