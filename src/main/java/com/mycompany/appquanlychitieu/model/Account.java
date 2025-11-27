@@ -8,6 +8,6 @@ package com.mycompany.appquanlychitieu.model;
  *
  * @author Duck
  */
-public class User {
+public class Account {
     
 }
