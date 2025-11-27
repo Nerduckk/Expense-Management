@@ -16,6 +16,22 @@ public class DebtTransaction extends NormalTransaction {
         this.debt = debt;
     }
 
+    @Override
+    public boolean isIncome() {
+        if (debt == null) return super.isIncome();
+        if (debt.getType() == DebtType.LENDING) return true;
+        if (debt.getType() == DebtType.BORROWING && category.getType() == CategoryType.INCOME) return true;
+        return false;
+    }
+
+    @Override
+    public boolean isExpense() {
+        if (debt == null) return super.isExpense();
+        if (debt.getType() == DebtType.BORROWING) return true;
+        if (debt.getType() == DebtType.LENDING && category.getType() == CategoryType.EXPENSE) return true;
+        return false;
+    }
+
     public Debt getDebt() {
         return debt;
     }
