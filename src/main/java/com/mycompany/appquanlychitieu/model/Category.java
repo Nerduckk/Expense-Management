@@ -6,8 +6,11 @@ package com.mycompany.appquanlychitieu.model;
 
 /**
  *
- * @author Duck
+ * @author Hoang
  */
-public class Category {
-    
+public class Category extends BaseEntity {
+    public CategoryType type;
+    public String icon;
+    public String color;
+    public BigDecimal budgetLimit;
 }
