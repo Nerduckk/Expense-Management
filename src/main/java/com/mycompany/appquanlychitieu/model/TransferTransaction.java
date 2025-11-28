@@ -21,14 +21,14 @@ public class TransferTransaction extends AbstractTransaction {
         this.transferFee = BigDecimal.ZERO;
     }
     public void setAccounts(Account from, Account to) {
-        if (from == null || to == null) throw new IllegalArgumentException("Tài khoản nguồn/đích không được null.");
-        if (from.getId().equals(to.getId())) throw new IllegalArgumentException("Không thể chuyển khoản cho chính mình.");
+        if (from == null || to == null) throw new IllegalArgumentException("Tai khoan nguon/dich khong dươc null.");
+        if (from.getId().equals(to.getId())) throw new IllegalArgumentException("Khong the chuyen khoan cho chinh minh.");
         this.fromAccount = from;
         this.toAccount = to;
     }
     public void setTransferFee(BigDecimal transferFee) {
         if (transferFee != null && transferFee.compareTo(BigDecimal.ZERO) < 0) {
-             throw new IllegalArgumentException("Phí chuyển khoản không được âm.");
+             throw new IllegalArgumentException("Phi chuyen khoan khong duoc am.");
         }
         this.transferFee = (transferFee == null) ? BigDecimal.ZERO : transferFee;
     }
@@ -41,4 +41,4 @@ public class TransferTransaction extends AbstractTransaction {
     @Override
     public Account getSourceAccount() { return this.fromAccount; }
 }
-}
+
