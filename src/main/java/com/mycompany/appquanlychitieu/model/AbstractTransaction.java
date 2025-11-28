@@ -21,7 +21,7 @@ public abstract class AbstractTransaction extends BaseEntity {
         this.excludeFromReport = false;
     }
     public void setAmount(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Số tiền giao dịch phải lớn hơn 0.");
         }
         this.amount = amount;
