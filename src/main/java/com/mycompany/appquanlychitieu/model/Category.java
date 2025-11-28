@@ -4,17 +4,22 @@
  */
 package com.mycompany.appquanlychitieu.model;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author Hoang
  */
+
 public class Category extends BaseEntity {
     private CategoryType type;
     private String icon;
     private String color;
     private BigDecimal budgetLimit;
 
-    public Category() {}
+    public Category() {
+        super();
+    }
 
     public Category(String name, CategoryType type, String icon, String color, BigDecimal budgetLimit) {
         this.setName(name);
