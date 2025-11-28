@@ -19,10 +19,13 @@ public class Account {
         setBalance(initialBalance);
         setCurrency(currency);
     }
+    public Long getId() {
+        return id;
+    }
     public String getName() { return name; }
     public void setName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Tên tài khoản không được để trống.");
+            throw new IllegalArgumentException("Ten tai khoan khong duoc de trong.");
         }
         this.name = name.trim();
     }
@@ -34,19 +37,19 @@ public class Account {
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) {
         if (currency == null || !currency.matches("[A-Z]{3}")) {
-            throw new IllegalArgumentException("Mã tiền tệ không hợp lệ (Phải là 3 ký tự in hoa).");
+            throw new IllegalArgumentException("Ma tien te khong hop le(Phai la 3 ky tu in hoa).");
         }
         this.currency = currency;
     }
     public void credit(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Số tiền nạp phải dương.");
+            throw new IllegalArgumentException("So tien nap phai duong.");
         }
         this.balance = this.balance.add(amount);
     }
     public void debit(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Số tiền rút phải dương.");
+            throw new IllegalArgumentException("So tien rut phai duong.");
         }
         this.balance = this.balance.subtract(amount);
     }
