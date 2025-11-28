@@ -3,17 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.appquanlychitieu.model;
-a
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 /**
  *
  * @author DAT
  */
-enum CycleType{
-        DAILY,
-        WEEKLY,
-        MONTHLY, 
-        YEARLY
-};    
 public class RecurringSchedule extends BaseEntity {
     private Account account;
     private Category category;
@@ -137,6 +133,7 @@ public class RecurringSchedule extends BaseEntity {
         newTransaction.setCategory(this.category);
         newTransaction.setAmount(this.amount);
         newTransaction.setDate(LocalDate.now()); 
+        newTransaction.setName("Auto-Txn-" + LocalDate.now());
         return newTransaction;
     }
 }
