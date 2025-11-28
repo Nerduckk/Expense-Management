@@ -4,15 +4,19 @@
  */
 package com.mycompany.appquanlychitieu.model;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 /**
  *
  * @author 
  */
+
 public class DebtTransaction extends NormalTransaction {
     private Debt debt;
 
     public DebtTransaction(BigDecimal amount, LocalDate date, Account account, Category category, Debt debt) {
-        super(amount, date, account, category);
+        super(null, amount, date, account, category);
         this.debt = debt;
     }
 
