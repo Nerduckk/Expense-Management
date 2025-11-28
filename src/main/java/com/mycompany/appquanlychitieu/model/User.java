@@ -17,9 +17,10 @@ public class User extends BaseEntity {
     private String passwordHash;
     private String avatarPath;
     private String defaultCurrency;
-
+    
+    
     public User() {
-        super(null, null);
+        super();
     }
 
     public User(Long id, String name, String email, String passwordHash, String defaultCurrency) {
@@ -70,7 +71,6 @@ public class User extends BaseEntity {
         this.setUpdatedAt(LocalDateTime.now());
     }
 
-    @Override
     public String getSummary() {
         return "User: " + getName() + " (" + email + ")";
     }
