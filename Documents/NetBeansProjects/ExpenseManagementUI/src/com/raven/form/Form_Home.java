@@ -19,6 +19,13 @@ import javax.swing.table.DefaultTableModel;
 import com.mycompany.appquanlychitieu.service.DataStore;
 import com.mycompany.appquanlychitieu.model.AbstractTransaction;
 import com.mycompany.appquanlychitieu.AppContext;
+import com.mycompany.appquanlychitieu.model.Debt;
+import com.mycompany.appquanlychitieu.model.DebtType;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class Form_Home extends javax.swing.JPanel {
     private EventAction tableEvent;
@@ -100,51 +107,85 @@ private void initCardData() {
     card4.setData(new ModelCard("Giao dịch tháng", countTxn,      0, icon4));
 }
 private void initNoticeBoard() {
-    // Ngày gần nhất
-    noticeBoard.addDate("29/11/2025");
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(94, 49, 238),
-            "Hóa đơn Internet",
-            "Hôm nay",
-            "Nhắc nhở: Thanh toán hóa đơn Internet 250.000đ trước 23:59 để tránh bị gián đoạn dịch vụ."
-    ));
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(218, 49, 238),
-            "Hạn trả nợ thẻ tín dụng",
-            "2 ngày nữa",
-            "Số tiền cần thanh toán tối thiểu: 1.500.000đ. Nên trả sớm để tránh phí phạt & lãi suất cao."
-    ));
+    java.time.LocalDate today = java.time.LocalDate.now();
+    java.time.LocalDate to = today.plusDays(7);
 
-    // Ngày khác
-    noticeBoard.addDate("01/12/2025");
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(32, 171, 43),
-            "Mục tiêu tiết kiệm",
-            "08:00",
-            "Mục tiêu tháng 12: Tiết kiệm 3.000.000đ. Hạn chế ăn ngoài quá 3 lần/tuần."
-    ));
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(50, 93, 215),
-            "Theo dõi chi tiêu",
-            "10:30",
-            "Nhập lại các giao dịch tiền mặt (ăn uống, xăng xe) vào app mỗi tối để không bị sót."
-    ));
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(27, 188, 204),
-            "Lưu ý ví Momo",
-            "15:00",
-            "Kiểm tra số dư ví Momo & đối chiếu với app để đảm bảo số liệu chính xác."
-    ));
-    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-            new Color(238, 46, 57),
-            "Cảnh báo chi tiêu",
-            "20:15",
-            "Chi tiêu ăn uống tháng này đã đạt 80% hạn mức. Cân nhắc giảm các khoản không cần thiết."
-    ));
+    // Lấy list Debt từ DataStore (sẽ thêm ở bước 2)
+    java.util.List<com.mycompany.appquanlychitieu.model.Debt> allDebts =
+            com.mycompany.appquanlychitieu.service.DataStore.debts;
+
+    // Nếu chưa có dữ liệu nợ nào
+    if (allDebts == null || allDebts.isEmpty()) {
+        noticeBoard.addDate(today.toString());
+        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                new Color(0, 153, 51),
+                "Không có khoản nợ nào",
+                "",
+                "Hiện tại bạn chưa ghi nhận khoản nợ nào trong hệ thống."
+        ));
+        noticeBoard.scrollToTop();
+        return;
+    }
+
+    // Lọc các khoản nợ đang ACTIVE và đến hạn trong 7 ngày tới
+    java.util.List<com.mycompany.appquanlychitieu.model.Debt> upcoming =
+            allDebts.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .filter(d -> d.getStatus() == com.mycompany.appquanlychitieu.model.DebtStatus.ACTIVE)
+                    .filter(d -> {
+                        java.time.LocalDate due = d.getDueDate();
+                        return due != null
+                                && !due.isBefore(today)
+                                && !due.isAfter(to);
+                    })
+                    .sorted(java.util.Comparator.comparing(
+                            com.mycompany.appquanlychitieu.model.Debt::getDueDate))
+                    .toList();
+
+    if (upcoming.isEmpty()) {
+        noticeBoard.addDate(today.toString());
+        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                new Color(0, 153, 51),
+                "Không có khoản nợ sắp đến hạn",
+                "",
+                "Trong 7 ngày tới không có khoản nợ nào đến hạn."
+        ));
+        noticeBoard.scrollToTop();
+        return;
+    }
+
+    // Gom theo ngày đến hạn và đổ ra NoticeBoard
+    java.time.LocalDate currentDate = null;
+    java.text.DecimalFormat fmt = new java.text.DecimalFormat("#,##0");
+
+    for (com.mycompany.appquanlychitieu.model.Debt d : upcoming) {
+        java.time.LocalDate due = d.getDueDate();
+        if (currentDate == null || !currentDate.equals(due)) {
+            currentDate = due;
+            noticeBoard.addDate(due.toString());
+        }
+
+        String title;
+        if (d.getType() == com.mycompany.appquanlychitieu.model.DebtType.BORROWING) {
+            title = "Hạn trả nợ cho " + d.getPersonName();
+        } else {
+            title = "Thu nợ từ " + d.getPersonName();
+        }
+
+        String time = "";   // nếu muốn có thể đặt "23:59" hay gì đó
+        String desc = "Số tiền còn lại: " + fmt.format(d.getRemainingAmount())
+                    + " / Gốc: " + fmt.format(d.getPrincipalAmount());
+
+        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                new Color(238, 46, 57),
+                title,
+                time,
+                desc
+        ));
+    }
 
     noticeBoard.scrollToTop();
 }
-
     private void showMessage(String message) {
         Message obj = new Message(Main.getFrames()[0], true);
         obj.showMessage(message);
