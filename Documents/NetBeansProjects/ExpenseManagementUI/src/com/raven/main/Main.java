@@ -24,10 +24,12 @@ import org.jdesktop.animation.timing.TimingTargetAdapter;
 import ru.krlvm.swingacrylic.SwingAcrylic;
 import com.mycompany.appquanlychitieu.service.DataStore;
 import com.mycompany.appquanlychitieu.service.TransactionService;
+import com.raven.form.Dialog_Debt;
 import com.raven.form.Dialog_Transaction;
 import com.raven.form.Form_Accounts;
 import java.math.BigDecimal;
 import com.raven.form.Form_Categories;
+import com.raven.form.Form_Debts;
 import com.raven.form.Form_Transfer;
 public class Main extends javax.swing.JFrame {
     public static DataStore dataStore;
@@ -83,7 +85,22 @@ public class Main extends javax.swing.JFrame {
                 // Chuyển tiền
                 main.showForm(new Form_Transfer());
             }
+        } else if (menuIndex == 3) {
+            // Khoản nợ
+            if (subMenuIndex == -1 || subMenuIndex == 0) {
+                main.showForm(new Form_Debts(AppContext.debtService));
+            } else if (subMenuIndex == 1) {
+                Dialog_Debt dlg = new Dialog_Debt(
+                        Main.this,
+                        true,
+                        AppContext.debtService,
+                        null
+                );
+                dlg.setVisible(true);
+                main.showForm(new Form_Debts(AppContext.debtService));
+            }
         }
+
     }
 });
         main.showForm(new Form_Home(AppContext.transactionService));
