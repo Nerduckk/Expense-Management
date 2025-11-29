@@ -9,7 +9,7 @@ public class DataStore {
    
     private static final String FILE_ACCOUNTS = "accounts.dat";
     private static final String FILE_CATEGORIES = "categories.dat";
-    private static final String FILE_TRANSACTIONS = "transactions.da
+    private static final String FILE_TRANSACTIONS = "transactions.dat";
 
     public static List<Account> accounts;
     public static List<Category> categories;
