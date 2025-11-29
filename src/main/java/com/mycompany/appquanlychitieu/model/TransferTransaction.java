@@ -20,18 +20,31 @@ public class TransferTransaction extends AbstractTransaction {
         setAccounts(from, to);
         this.transferFee = BigDecimal.ZERO;
     }
+    
+    public TransferTransaction(Long id, BigDecimal amount, LocalDate date, Account from, Account to, BigDecimal fee) {
+        super(id, amount, date);
+        setAccounts(from, to);
+        setTransferFee(fee);
+    }
+
     public void setAccounts(Account from, Account to) {
-        if (from == null || to == null) throw new IllegalArgumentException("Tai khoan nguon/dich khong dươc null.");
+        if (from == null || to == null) throw new IllegalArgumentException("Tai khoan nguon/dich khong duoc null.");
         if (from.getId().equals(to.getId())) throw new IllegalArgumentException("Khong the chuyen khoan cho chinh minh.");
         this.fromAccount = from;
         this.toAccount = to;
     }
+
     public void setTransferFee(BigDecimal transferFee) {
         if (transferFee != null && transferFee.compareTo(BigDecimal.ZERO) < 0) {
              throw new IllegalArgumentException("Phi chuyen khoan khong duoc am.");
         }
         this.transferFee = (transferFee == null) ? BigDecimal.ZERO : transferFee;
     }
+
+    public Account getToAccount() { return toAccount; }
+    public Account getFromAccount() { return fromAccount; }
+    public BigDecimal getTransferFee() { return transferFee; }
+
     @Override
     public boolean isIncome() { return false; }
     @Override
@@ -41,4 +54,3 @@ public class TransferTransaction extends AbstractTransaction {
     @Override
     public Account getSourceAccount() { return this.fromAccount; }
 }
-
