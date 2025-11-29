@@ -32,31 +32,26 @@ public class TransactionService {
         }
     }
     public void deleteTransaction(AbstractTransaction txn) {
-    // Hoàn tác số dư trước
-    if (txn instanceof TransferTransaction) {
-        // Giao dịch chuyển khoản
-        TransferTransaction tTxn = (TransferTransaction) txn;
+    // Hoàn tác effect lên tài khoản trước
+    if (txn instanceof TransferTransaction tTxn) {
         BigDecimal totalDeduct = tTxn.getAmount().add(tTxn.getTransferFee());
-
-        // Lúc add: source.debit(totalDeduct), to.credit(amount)
-        // => Undo: source.credit(totalDeduct), to.debit(amount)
+        // lúc add: source.debit(totalDeduct), to.credit(amount)
+        // undo:
         tTxn.getSourceAccount().credit(totalDeduct);
         tTxn.getToAccount().debit(tTxn.getAmount());
     } else {
-        // Giao dịch Thu/Chi
         Account acc = txn.getSourceAccount();
         if (acc != null) {
             if (txn.isIncome()) {
-                // Lúc add: credit => undo: debit
+                // lúc add: credit → undo: debit
                 acc.debit(txn.getAmount());
             } else if (txn.isExpense()) {
-                // Lúc add: debit => undo: credit
+                // lúc add: debit → undo: credit
                 acc.credit(txn.getAmount());
             }
         }
     }
 
-    // Rồi mới xóa khỏi datastore
     DataStore.transactions.remove(txn);
     DataStore.saveData();
 }
