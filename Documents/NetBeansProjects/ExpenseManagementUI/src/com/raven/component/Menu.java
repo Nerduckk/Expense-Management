@@ -77,9 +77,9 @@ public class Menu extends PanelTransparent {
     // 3 - Báo cáo
     addMenu(new ModelMenu(
             new ImageIcon(getClass().getResource("/com/raven/icon/4.png")),
-            "Báo cáo",
-            "Theo tháng",
-            "Theo danh mục"
+            "Các khoản vay nợ",
+            "Danh Sách",
+            "Tạo khoản vay/nợ mới"
     ));
 
     // 4 - Cài đặt
