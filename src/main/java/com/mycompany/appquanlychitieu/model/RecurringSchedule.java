@@ -22,7 +22,8 @@ public class RecurringSchedule extends BaseEntity {
     private LocalDate endDate;
     private Integer totalTerms;
 
-    public RecurringSchedule(Account account, Category category, BigDecimal amount, CycleType cycle, LocalDate startDate, int paidTerms, LocalTime reminderTime, boolean autoCreate, LocalDate endDate, int totalTerms) {
+    public RecurringSchedule(Long id, String name, Account account, Category category, BigDecimal amount, CycleType cycle, LocalDate startDate, int paidTerms, LocalTime reminderTime, boolean autoCreate, LocalDate endDate, int totalTerms) {
+        super(id, name);
         setAccount(account);
         setCategory(category);
         setAmount(amount);
@@ -35,100 +36,56 @@ public class RecurringSchedule extends BaseEntity {
         this.totalTerms = totalTerms;
     }
 
-    public Account getAccount() {
-        return account;
-    }
+    public RecurringSchedule(Long id, String name, Account account, Category category, BigDecimal amount, CycleType cycle) {
+        super(id, name);
+        this.account = account;
+        this.category = category;
+        this.amount = amount;
+        this.cycle = cycle;
+        this.startDate = LocalDate.now();
+        this.paidTerms = 0;
+        this.autoCreate = true;
+        this.reminderTime = LocalTime.of(9, 0); 
 
-    public void setAccount(Account account) {
-        if(account != null)
-            this.account = account;
-    }
+    public void setAccount(Account account) { this.account = account; }
+    public Account getAccount() { return account; }
 
-    public Category getCategory() {
-        return category;
-    }
+    public void setCategory(Category category) { this.category = category; }
+    public Category getCategory() { return category; }
 
-    public void setCategory(Category category) {
-        if(category != null)
-            this.category = category;
+    public void setAmount(BigDecimal amount) { 
+        if(amount != null) this.amount = amount; 
     }
+    public BigDecimal getAmount() { return amount; }
 
-    public BigDecimal getAmount() {
-        return amount;
-    }
+    public void setCycle(CycleType cycle) { this.cycle = cycle; }
+    public CycleType getCycle() { return cycle; }
 
-    public void setAmount(BigDecimal amount) {
-        if(!amount.equals(BigDecimal.ZERO))
-            this.amount = amount;
-    }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public LocalDate getStartDate() { return startDate; }
 
-    public CycleType getCycle() {
-        return cycle;
-    }
+    public void setPaidTerms(Integer paidTerms) { this.paidTerms = paidTerms; }
+    public Integer getPaidTerms() { return paidTerms; }
 
-    public void setCycle(CycleType cycle) {
-        if(cycle != null)
-            this.cycle = cycle;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        if(startDate != null)
-            this.startDate = startDate;
-    }
-
-    public Integer getPaidTerms() {
-        return paidTerms;
-    }
-
-    public void setPaidTerms(Integer paidTerms) {
-        if(paidTerms != null)
-            this.paidTerms = paidTerms;
-    }
-
-    public LocalTime getReminderTime() {
-        return reminderTime;
-    }
-
-    public void setReminderTime(LocalTime reminderTime) {
-        if(reminderTime != null)
-            this.reminderTime = reminderTime;
-    }
+    public void setReminderTime(LocalTime reminderTime) { this.reminderTime = reminderTime; }
+    public LocalTime getReminderTime() { return reminderTime; }
         
-    public boolean isAutoCreate() {
-        return autoCreate;
-    }
+    public boolean isAutoCreate() { return autoCreate; }
+    public void setAutoCreate(boolean autoCreate) { this.autoCreate = autoCreate; }
 
-    public void setAutoCreate(boolean autoCreate) {
-        this.autoCreate = autoCreate;
-    }
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public int getTotalTerms() {
-        return totalTerms;
-    }
-
-    public void setTotalTerms(Integer totalTerms) {
-        this.totalTerms = totalTerms;
-    }
+    public int getTotalTerms() { return totalTerms; }
+    public void setTotalTerms(Integer totalTerms) { this.totalTerms = totalTerms; }
     
     public NormalTransaction generateTxn(){
-        if(totalTerms != null && paidTerms >= totalTerms){
+        if(totalTerms != null && paidTerms != null && paidTerms >= totalTerms){
                 System.out.println("Da hoan thanh so ky dinh truoc.");
                 return null;
         }    
         NormalTransaction newTransaction = new NormalTransaction();
-
+        newTransaction.id = System.currentTimeMillis(); 
         newTransaction.setAccount(this.account);
         newTransaction.setCategory(this.category);
         newTransaction.setAmount(this.amount);
