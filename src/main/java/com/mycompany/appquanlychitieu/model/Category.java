@@ -28,7 +28,14 @@ public class Category extends BaseEntity {
         this.color = color;
         this.budgetLimit = budgetLimit;
     }
-
+    
+    public Category(Long id, String name, CategoryType type) {
+        super(id, name);
+        this.type = type;
+        this.icon = "default";
+        this.color = "white";
+    }
+    
     public boolean isOverBudget(BigDecimal currentSpentAmount) {
         if (this.budgetLimit == null || currentSpentAmount == null) return false;
         return currentSpentAmount.compareTo(this.budgetLimit) > 0;
