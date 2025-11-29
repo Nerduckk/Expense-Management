@@ -23,11 +23,11 @@ public class User extends BaseEntity {
         super();
     }
 
-    public User(Long id, String name, String email, String passwordHash, String defaultCurrency) {
+    public User(Long id, String name, String email, String defaultCurrency) {
         super(id, name);
         this.email = email;
-        this.passwordHash = passwordHash;
         this.defaultCurrency = defaultCurrency;
+        this.passwordHash = ""; 
         this.avatarPath = "default_avatar.png";
     }
 
