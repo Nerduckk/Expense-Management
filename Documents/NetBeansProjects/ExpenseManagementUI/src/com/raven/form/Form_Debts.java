@@ -33,7 +33,7 @@ public class Form_Debts extends JPanel {
     private JButton btnEdit;
     private JButton btnDelete;
     private JButton btnRefresh;
-
+    private JButton btnPay;
     public Form_Debts(DebtService ds) {
         this.debtService = ds;
         initComponents();
@@ -78,7 +78,7 @@ public class Form_Debts extends JPanel {
         btnEdit.addActionListener(e -> editSelected());
         btnDelete.addActionListener(e -> deleteSelected());
         btnRefresh.addActionListener(e -> loadDebtsToTable());
-
+        btnPay.addActionListener(e -> paySelected());
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -119,6 +119,7 @@ public class Form_Debts extends JPanel {
                         .addComponent(lblTitle)
                         .addComponent(btnAdd)
                         .addComponent(btnEdit)
+                        .addComponent(btnPay)
                         .addComponent(btnDelete)
                         .addComponent(btnRefresh))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -210,5 +211,16 @@ public class Form_Debts extends JPanel {
             debtService.delete(d);
             loadDebtsToTable();
         }
+    }
+    private void paySelected() {
+    Debt d = getSelectedDebt();
+    if (d == null) {
+        JOptionPane.showMessageDialog(this, "Hãy chọn một khoản nợ.");
+        return;
+    }
+    Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
+    Dialog_PayDebt dlg = new Dialog_PayDebt(parent, true, d);
+    dlg.setVisible(true);
+    loadDebtsToTable();
     }
 }
