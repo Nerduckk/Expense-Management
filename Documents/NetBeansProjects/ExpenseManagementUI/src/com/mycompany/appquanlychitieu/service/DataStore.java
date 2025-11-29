@@ -1,6 +1,7 @@
 package com.mycompany.appquanlychitieu.service;
 
 import com.mycompany.appquanlychitieu.model.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DataStore {
@@ -8,10 +9,13 @@ public class DataStore {
     private static final String FILE_CATEGORIES = "categories.dat";
     private static final String FILE_TRANSACTIONS = "transactions.dat";
     private static final String FILE_USERS = "users.dat";
+    private static final String FILE_DEBTS = "debts.dat";
     public static List<User> users;
     public static List<Account> accounts;
     public static List<Category> categories;
     public static List<AbstractTransaction> transactions;
+    public static List<Debt> debts;
+
 
     public static void loadData() {
     // ===== USERS =====
@@ -37,6 +41,11 @@ public class DataStore {
     if (transactions == null) {
         transactions = new java.util.ArrayList<>();
     }
+    debts = FileHelper.loadFromFile(FILE_DEBTS);
+    if (debts == null) {
+    debts = new ArrayList<>();
+    }
+
 
     // === 1. Tạo user mặc định nếu chưa có ===
     if (users.isEmpty()) {
@@ -105,5 +114,7 @@ public class DataStore {
         FileHelper.saveToFile(categories, FILE_CATEGORIES);
         FileHelper.saveToFile(transactions, FILE_TRANSACTIONS);
         FileHelper.saveToFile(users, FILE_USERS);
+        FileHelper.saveToFile(users, FILE_USERS);
+        FileHelper.saveToFile(debts, FILE_DEBTS); 
     }
 }
