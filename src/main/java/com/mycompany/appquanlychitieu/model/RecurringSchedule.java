@@ -46,7 +46,8 @@ public class RecurringSchedule extends BaseEntity {
         this.paidTerms = 0;
         this.autoCreate = true;
         this.reminderTime = LocalTime.of(9, 0); 
-
+    }
+    
     public void setAccount(Account account) { this.account = account; }
     public Account getAccount() { return account; }
 
