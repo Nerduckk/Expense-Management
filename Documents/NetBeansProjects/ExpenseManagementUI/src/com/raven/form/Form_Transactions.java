@@ -395,58 +395,54 @@ public class Form_Transactions extends JPanel {
     // =================== XÓA GIAO DỊCH ===================
 
     private void deleteSelectedTransaction() {
-        int row = table.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Hãy chọn một giao dịch để xoá.",
-                    "Chưa chọn dòng",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            return;
-        }
-
-        if (currentList == null || row < 0 || row >= currentList.size()) {
-            return;
-        }
-
-        AbstractTransaction tx = currentList.get(row);
-        if (tx == null) return;
-
-        // KHÔNG cho xoá chuyển khoản
-        if (tx instanceof TransferTransaction) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Giao dịch này là CHUYỂN TIỀN.\n"
-                    + "Hiện tại không hỗ trợ xoá chuyển khoản từ màn này.",
-                    "Không thể xoá",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            return;
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(
+    int row = table.getSelectedRow();
+    if (row == -1) {
+        JOptionPane.showMessageDialog(
                 this,
-                "Bạn có chắc muốn xoá giao dịch này?",
-                "Xác nhận xoá",
-                JOptionPane.YES_NO_OPTION
+                "Hãy chọn một giao dịch để xoá.",
+                "Chưa chọn dòng",
+                JOptionPane.INFORMATION_MESSAGE
         );
-
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
-        }
-
-        // Xoá trong service (nhớ đảm bảo TransactionService.deleteTransaction()
-        // xử lý hoàn tác số dư cho đúng)
-        transactionService.deleteTransaction(tx);
-
-        // Xoá khỏi list đang hiển thị
-        currentList.remove(row);
-
-        // Vẽ lại bảng
-        loadTransactionsToTable();
+        return;
     }
 
+    if (currentList == null || row < 0 || row >= currentList.size()) {
+        return;
+    }
+
+    AbstractTransaction tx = currentList.get(row);
+    if (tx == null) return;
+
+    // KHÔNG cho xoá chuyển khoản
+    if (tx instanceof TransferTransaction) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Giao dịch này là CHUYỂN TIỀN.\n"
+                + "Hiện tại không hỗ trợ xoá chuyển khoản từ màn này.",
+                "Không thể xoá",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+        return;
+    }
+
+    int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc muốn xoá giao dịch này?",
+            "Xác nhận xoá",
+            JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm != JOptionPane.YES_OPTION) {
+        return;
+    }
+
+    // Xoá trong service + hoàn tác số dư (xem mục dưới)
+    transactionService.deleteTransaction(tx);
+
+    // ❌ KHÔNG currentList.remove(row) nữa
+    // Thay vào đó, áp lại filter hiện tại để load list mới
+    applyFilter();
+}
     // =================== TÍNH TỔNG THU / CHI / NET ===================
 
     private void updateSummary(List<AbstractTransaction> list) {
