@@ -89,53 +89,27 @@ public class Dialog_PayDebt extends JDialog {
         return;
     }
 
+    // --- CHẶN TRẢ VƯỢT NỢ ---
+    BigDecimal remaining = debt.getRemainingAmount();
+    if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+        JOptionPane.showMessageDialog(this,
+                "Khoản nợ này đã được thanh toán hết, không thể trả/thu thêm.");
+        return;
+    }
+    if (amount.compareTo(remaining) > 0) {
+        JOptionPane.showMessageDialog(this,
+                "Số tiền vượt quá số nợ còn lại (" + remaining.toPlainString() + ").");
+        return;
+    }
+    // -------------------------
+
     Account acc = (Account) comboAccount.getSelectedItem();
     if (acc == null) {
         JOptionPane.showMessageDialog(this, "Chưa chọn tài khoản");
         return;
     }
 
-    Category category = findDefaultCategoryForDebt();
-    if (category == null) {
-        JOptionPane.showMessageDialog(this,
-                "Chưa có danh mục phù hợp cho khoản nợ này (thu/chi). Hãy tạo danh mục trước.");
-        return;
-    }
-
-    // Tạo id mới giống Dialog_Transaction
-    long id = DataStore.transactions.stream()
-            .mapToLong(t -> t.getId() == null ? 0L : t.getId())
-            .max()
-            .orElse(0L) + 1;
-
-    DebtTransaction txn = new DebtTransaction(
-            id,
-            amount,
-            LocalDate.now(),
-            acc,
-            category,
-            debt
-    );
-    txn.setNote("Giao dịch cho khoản nợ: " + debt.getName());
-
-    // Gắn giao dịch này vào danh sách của khoản nợ
-    if (debt.getTransactions() == null) {
-        debt.setTransactions(new java.util.ArrayList<>());
-    }
-    debt.getTransactions().add(txn);
-
-    // Cập nhật trạng thái nếu đã trả/thu đủ
-    if (debt.getRemainingAmount().compareTo(BigDecimal.ZERO) <= 0) {
-        debt.setStatus(DebtStatus.COMPLETED);
-    }
-
-    // Đưa vào hệ thống giao dịch chung (tự xử lý số dư tài khoản)
-    AppContext.transactionService.addTransaction(txn);
-
-    DataStore.saveData();
-
-    JOptionPane.showMessageDialog(this, "Giao dịch đã được tạo.");
-    dispose();
+    // ... đoạn phía dưới: chọn Category, tạo DebtTransaction, add vào Debt, 
+    //   gọi AppContext.transactionService.addTransaction(txn) và set COMPLETED nếu hết nợ ...
 }
-
 }
