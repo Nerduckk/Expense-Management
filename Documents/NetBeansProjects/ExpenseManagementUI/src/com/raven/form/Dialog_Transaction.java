@@ -195,12 +195,6 @@ public class Dialog_Transaction extends javax.swing.JDialog {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        if (!isIncome) {
-            // Chi tiêu -> lưu số âm
-            amount = amount.abs().negate();
-        }
-
         if (editingTransaction == null) {
             // Thêm mới
             long newId = DataStore.transactions.stream()
