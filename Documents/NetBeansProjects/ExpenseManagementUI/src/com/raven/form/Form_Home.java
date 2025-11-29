@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.awt.Frame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import com.mycompany.appquanlychitieu.model.NormalTransaction;
+
 
 public class Form_Home extends javax.swing.JPanel {
     private EventAction tableEvent;
@@ -58,15 +63,52 @@ private void initTableData() {
     tableEvent = new EventAction() {
         @Override
         public void delete(ModelTransaction tx) {
+            // Hỏi xác nhận trước khi xóa
+            int opt = JOptionPane.showConfirmDialog(
+                    Form_Home.this,
+                    "Xóa giao dịch:\n" + tx.getDescription() + " ?",
+                    "Xác nhận xóa",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (opt != JOptionPane.YES_OPTION) {
+                return;    // người dùng bấm NO / Cancel -> không làm gì
+            }
+
             transactionService.deleteTransaction(tx.getRawTransaction());
-            DataStore.saveData();  
+            DataStore.saveData();
+            reloadTable();
+            initCardData();   // cập nhật lại các card tổng thu/chi/số dư
             showMessage("Đã xoá giao dịch: " + tx.getDescription());
-            reloadTable();        
         }
 
         @Override
         public void update(ModelTransaction tx) {
-            showMessage("Chức năng cập nhật chưa hỗ trợ.");
+            // Sửa giao dịch
+            AbstractTransaction raw = tx.getRawTransaction();
+            if (!(raw instanceof NormalTransaction)) {
+                JOptionPane.showMessageDialog(
+                        Form_Home.this,
+                        "Giao dịch này là CHUYỂN TIỀN hoặc loại đặc biệt.\n"
+                        + "Hiện tại chỉ sửa được giao dịch Thu/Chi.\n"
+                        + "Nếu muốn chỉnh, hãy sửa trong các form tương ứng.",
+                        "Không thể sửa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+            }
+
+            Frame parent = (Frame) SwingUtilities.getWindowAncestor(Form_Home.this);
+            Dialog_Transaction dlg = new Dialog_Transaction(
+                    parent,
+                    true,
+                    transactionService,
+                    raw      // ở đây chắc chắn là NormalTransaction
+            );
+            dlg.setVisible(true);
+
+            // Sau khi dialog đóng, reload lại dữ liệu
+            reloadTable();
+            initCardData();
         }
     };
 
