@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt 
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java 
  */
 package com.mycompany.appquanlychitieu.model;
 import java.math.BigDecimal;
@@ -22,6 +22,16 @@ public class Debt extends BaseEntity {
     private List<DebtTransaction> transactions;
 
     public Debt() { this.transactions = new ArrayList<>(); }
+    
+    public Debt(Long id, String name, DebtType type, BigDecimal principalAmount, String personName) {
+        super(id, name);
+        this.type = type;
+        this.principalAmount = principalAmount;
+        this.personName = personName;
+        this.status = DebtStatus.ACTIVE;
+        this.startDate = LocalDate.now();
+        this.transactions = new ArrayList<>();
+    }
 
     public BigDecimal getPaidAmount() {
         BigDecimal total = BigDecimal.ZERO;
