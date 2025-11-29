@@ -15,15 +15,15 @@ import java.time.LocalDate;
 public class DebtTransaction extends NormalTransaction {
     private Debt debt;
 
-    public DebtTransaction(BigDecimal amount, LocalDate date, Account account, Category category, Debt debt) {
-        super(null, amount, date, account, category);
+    public DebtTransaction(Long id, BigDecimal amount, LocalDate date, Account account, Category category, Debt debt) {
+        super(id, amount, date, account, category);
         this.debt = debt;
     }
 
     @Override
     public boolean isIncome() {
         if (debt == null) return super.isIncome();
-        if (debt.getType() == DebtType.LENDING) return true;
+        if (debt.getType() == DebtType.LENDING) return true; 
         if (debt.getType() == DebtType.BORROWING && category.getType() == CategoryType.INCOME) return true;
         return false;
     }
@@ -36,11 +36,6 @@ public class DebtTransaction extends NormalTransaction {
         return false;
     }
 
-    public Debt getDebt() {
-        return debt;
-    }
-
-    public void setDebt(Debt debt) {
-        this.debt = debt;
-    }
+    public Debt getDebt() { return debt; }
+    public void setDebt(Debt debt) { this.debt = debt; }
 }
