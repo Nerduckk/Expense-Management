@@ -6,6 +6,7 @@ import com.mycompany.appquanlychitieu.model.Account;
 import com.mycompany.appquanlychitieu.model.Category;
 import com.mycompany.appquanlychitieu.model.CategoryType;
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.mycompany.appquanlychitieu.model.TransferTransaction;
 import com.mycompany.appquanlychitieu.service.DataStore;
 import com.mycompany.appquanlychitieu.service.TransactionService;
 import com.toedter.calendar.JDateChooser;
@@ -214,53 +215,70 @@ public class Form_Transactions extends JPanel {
     }
 
     // load mặc định: toàn bộ giao dịch
-    private void loadTransactionsToTable() {
-        loadTransactionsToTable(DataStore.transactions);
-    }
+// Gọi chung: vẽ lại theo currentList hiện tại
+private void loadTransactionsToTable() {
+    loadTransactionsToTable(currentList);
+}
 
-    // load theo list (dùng cho filter)
-    private void loadTransactionsToTable(List<AbstractTransaction> source) {
-        currentList = source;       // lưu list hiện tại cho renderer
-        tableModel.setRowCount(0);
+// Vẽ bảng theo list truyền vào
+private void loadTransactionsToTable(java.util.List<AbstractTransaction> source) {
+    tableModel.setRowCount(0);
+    if (source == null) return;
 
-        DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
+    java.text.DecimalFormat moneyFormat = new java.text.DecimalFormat("#,##0");
 
-        for (AbstractTransaction tx : source) {
-            if (tx == null) continue;
+    for (AbstractTransaction tx : source) {
+        if (tx == null) continue;
 
-            String desc = tx.getNote();
+        String desc = tx.getNote();
+        Category cat = null;
+        String type;
+
+        if (tx instanceof TransferTransaction) {
+            // ===== GIAO DỊCH CHUYỂN TIỀN =====
+            if (desc == null || desc.isBlank()) {
+                desc = "Chuyển tiền";
+            }
+            type = "Chuyển tiền";
+        } else {
+            // ===== GIAO DỊCH THU / CHI BÌNH THƯỜNG =====
             if (desc == null || desc.isBlank()) {
                 desc = "(Không có mô tả)";
             }
+            type = tx.isIncome() ? "Thu nhập" : "Chi tiêu";
 
-            // Loại: Thu nhập / Chi tiêu
-            String type = tx.isIncome() ? "Thu nhập" : "Chi tiêu";
-
-            // Danh mục
-            Category cat = null;
             if (tx instanceof NormalTransaction) {
-            cat = ((NormalTransaction) tx).getCategory();
+                cat = ((NormalTransaction) tx).getCategory();
             }
-
-            String catName = (cat != null && cat.getName() != null)
-                    ? cat.getName()
-                    : "(Không phân loại)";
-
-            // Ví
-            Account acc = tx.getSourceAccount();
-            String accName = (acc != null && acc.getName() != null)
-                    ? acc.getName()
-                    : "(Không rõ ví)";
-
-            BigDecimal amountBD = tx.getAmount() != null ? tx.getAmount() : BigDecimal.ZERO;
-            String amountStr = moneyFormat.format(amountBD.abs());
-
-            tableModel.addRow(new Object[]{desc, catName, type, accName, amountStr});
         }
 
-        updateSummary(source);
-    }
+        String catName;
+        if (tx instanceof TransferTransaction) {
+            catName = "Chuyển tiền";
+        } else {
+            catName = (cat != null && cat.getName() != null)
+                    ? cat.getName()
+                    : "(Không phân loại)";
+        }
 
+        Account acc = tx.getSourceAccount();
+        String accName = (acc != null && acc.getName() != null)
+                ? acc.getName()
+                : "(Không rõ ví)";
+
+        java.math.BigDecimal amountBD =
+                tx.getAmount() != null ? tx.getAmount() : java.math.BigDecimal.ZERO;
+        String amountStr = moneyFormat.format(amountBD.abs());
+
+        tableModel.addRow(new Object[]{
+                desc,
+                catName,
+                type,
+                accName,
+                amountStr
+        });
+    }
+}
     // =================== FILTER ===================
 
     private void applyFilter() {
@@ -303,7 +321,7 @@ public class Form_Transactions extends JPanel {
         List<AbstractTransaction> list =
                 transactionService.filter(from, to, type, accountId);
 
-        loadTransactionsToTable(list);
+        loadTransactionsToTable();
     }
 
     // =================== DIALOG THÊM / SỬA ===================
