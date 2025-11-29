@@ -62,10 +62,11 @@ public class Form_Transactions extends JPanel {
     // =================== CONSTRUCTOR ===================
 
     public Form_Transactions(TransactionService ts) {
-        this.transactionService = ts;
-        initComponents();
-        loadAccountsToCombo();
-        loadTransactionsToTable();        // load + tính tổng lần đầu
+    this.transactionService = ts;
+    initComponents();
+    loadAccountsToCombo();
+    currentList = transactionService.getAll();
+    loadTransactionsToTable();        
     }
 
     public Form_Transactions() {
@@ -146,6 +147,7 @@ public class Form_Transactions extends JPanel {
             if (comboAccount.getItemCount() > 0) {
                 comboAccount.setSelectedIndex(0);
             }
+            currentList = transactionService.getAll();
             loadTransactionsToTable();
         });
 
@@ -320,7 +322,7 @@ private void loadTransactionsToTable(java.util.List<AbstractTransaction> source)
 
         List<AbstractTransaction> list =
                 transactionService.filter(from, to, type, accountId);
-
+        currentList = list;
         loadTransactionsToTable();
     }
 
