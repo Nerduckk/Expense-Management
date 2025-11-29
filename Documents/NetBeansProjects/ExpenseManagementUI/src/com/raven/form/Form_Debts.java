@@ -55,6 +55,7 @@ public class Form_Debts extends JPanel {
         btnEdit = new JButton("Sửa");
         btnDelete = new JButton("Xóa");
         btnRefresh = new JButton("↻ Làm mới");
+        btnPay = new JButton("Trả/Thu nợ"); 
 
         String[] columns = {
             "Tên",
