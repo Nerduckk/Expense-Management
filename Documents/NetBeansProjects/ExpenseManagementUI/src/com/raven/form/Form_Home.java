@@ -1,0 +1,341 @@
+package com.raven.form;
+import com.raven.dialog.Message;
+import com.raven.main.Main;
+import com.raven.model.ModelCard;
+import com.raven.model.ModelTransaction;
+import com.raven.swing.icon.GoogleMaterialDesignIcons;
+import com.raven.swing.icon.IconFontSwing;
+import com.raven.swing.noticeboard.ModelNoticeBoard;
+import com.raven.swing.table.EventAction;
+import java.awt.Color;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import com.mycompany.appquanlychitieu.service.DataStore;       
+import com.mycompany.appquanlychitieu.service.TransactionService;
+import com.mycompany.appquanlychitieu.model.Account;
+import com.mycompany.appquanlychitieu.model.AbstractTransaction;
+import java.math.BigDecimal;
+import javax.swing.table.DefaultTableModel;
+import com.mycompany.appquanlychitieu.service.DataStore;
+import com.mycompany.appquanlychitieu.model.AbstractTransaction;
+import com.mycompany.appquanlychitieu.AppContext;
+
+public class Form_Home extends javax.swing.JPanel {
+    private EventAction tableEvent;
+    private final TransactionService transactionService;
+    public Form_Home(TransactionService ts) {
+        this.transactionService = ts;
+        initComponents();
+        table1.fixTable(jScrollPane1);
+        setOpaque(false);
+        initData();
+    }
+    public Form_Home() {
+        this(AppContext.transactionService);
+    }
+
+    private void initData() {
+        initCardData();
+        initNoticeBoard();
+        initTableData();
+    }
+private void reloadTable() {
+    DefaultTableModel model = (DefaultTableModel) table1.getModel();
+    model.setRowCount(0);
+    for (AbstractTransaction t : DataStore.transactions) {
+        ModelTransaction row = ModelTransaction.fromTransaction(t);
+        model.addRow(row.toRowTable(tableEvent));
+    }
+}
+private void initTableData() {
+    tableEvent = new EventAction() {
+        @Override
+        public void delete(ModelTransaction tx) {
+            transactionService.deleteTransaction(tx.getRawTransaction());
+            DataStore.saveData();  
+            showMessage("Đã xoá giao dịch: " + tx.getDescription());
+            reloadTable();        
+        }
+
+        @Override
+        public void update(ModelTransaction tx) {
+            showMessage("Chức năng cập nhật chưa hỗ trợ.");
+        }
+    };
+
+    // Lần đầu load
+    reloadTable();
+}
+private void initCardData() {
+    int month = java.time.LocalDate.now().getMonthValue();
+    int year  = java.time.LocalDate.now().getYear();
+
+    // Lấy số liệu từ service
+    BigDecimal totalIncomeBD  = transactionService.getTotalIncomeMonth(month, year);
+    BigDecimal totalExpenseBD = transactionService.getTotalExpenseMonth(month, year);
+    int countTxn              = transactionService.countTransactionsMonth(month, year);
+
+    // Tính tổng số dư từ tất cả ví
+    BigDecimal totalBalanceBD = DataStore.accounts.stream()
+            .map(Account::getBalance)                       // BigDecimal
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    // Convert ra double cho ModelCard
+    double totalIncome   = totalIncomeBD.doubleValue();
+    double totalExpense  = totalExpenseBD.doubleValue();
+    double totalBalance  = totalBalanceBD.doubleValue();
+
+    Icon icon1 = IconFontSwing.buildIcon(GoogleMaterialDesignIcons.PEOPLE, 60,
+            new Color(255, 255, 255, 100), new Color(255, 255, 255, 15));
+    Icon icon2 = IconFontSwing.buildIcon(GoogleMaterialDesignIcons.MONETIZATION_ON, 60,
+            new Color(255, 255, 255, 100), new Color(255, 255, 255, 15));
+    Icon icon3 = IconFontSwing.buildIcon(GoogleMaterialDesignIcons.SHOPPING_BASKET, 60,
+            new Color(255, 255, 255, 100), new Color(255, 255, 255, 15));
+    Icon icon4 = IconFontSwing.buildIcon(GoogleMaterialDesignIcons.BUSINESS_CENTER, 60,
+            new Color(255, 255, 255, 100), new Color(255, 255, 255, 15));
+
+    card1.setData(new ModelCard("Tổng số dư",      totalBalance,  0, icon1));
+    card2.setData(new ModelCard("Thu nhập tháng",  totalIncome,   0, icon2));
+    card3.setData(new ModelCard("Chi tiêu tháng",  totalExpense,  0, icon3));
+    card4.setData(new ModelCard("Giao dịch tháng", countTxn,      0, icon4));
+}
+private void initNoticeBoard() {
+    // Ngày gần nhất
+    noticeBoard.addDate("29/11/2025");
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(94, 49, 238),
+            "Hóa đơn Internet",
+            "Hôm nay",
+            "Nhắc nhở: Thanh toán hóa đơn Internet 250.000đ trước 23:59 để tránh bị gián đoạn dịch vụ."
+    ));
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(218, 49, 238),
+            "Hạn trả nợ thẻ tín dụng",
+            "2 ngày nữa",
+            "Số tiền cần thanh toán tối thiểu: 1.500.000đ. Nên trả sớm để tránh phí phạt & lãi suất cao."
+    ));
+
+    // Ngày khác
+    noticeBoard.addDate("01/12/2025");
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(32, 171, 43),
+            "Mục tiêu tiết kiệm",
+            "08:00",
+            "Mục tiêu tháng 12: Tiết kiệm 3.000.000đ. Hạn chế ăn ngoài quá 3 lần/tuần."
+    ));
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(50, 93, 215),
+            "Theo dõi chi tiêu",
+            "10:30",
+            "Nhập lại các giao dịch tiền mặt (ăn uống, xăng xe) vào app mỗi tối để không bị sót."
+    ));
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(27, 188, 204),
+            "Lưu ý ví Momo",
+            "15:00",
+            "Kiểm tra số dư ví Momo & đối chiếu với app để đảm bảo số liệu chính xác."
+    ));
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            new Color(238, 46, 57),
+            "Cảnh báo chi tiêu",
+            "20:15",
+            "Chi tiêu ăn uống tháng này đã đạt 80% hạn mức. Cân nhắc giảm các khoản không cần thiết."
+    ));
+
+    noticeBoard.scrollToTop();
+}
+
+    private void showMessage(String message) {
+        Message obj = new Message(Main.getFrames()[0], true);
+        obj.showMessage(message);
+    }
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        card1 = new com.raven.component.Card();
+        jLabel1 = new javax.swing.JLabel();
+        card2 = new com.raven.component.Card();
+        card3 = new com.raven.component.Card();
+        card4 = new com.raven.component.Card();
+        panelTransparent1 = new com.raven.swing.PanelTransparent();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table1 = new com.raven.swing.table.Table();
+        jLabel5 = new javax.swing.JLabel();
+        panelTransparent2 = new com.raven.swing.PanelTransparent();
+        noticeBoard = new com.raven.swing.noticeboard.NoticeBoard();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+
+        card1.setColorGradient(new java.awt.Color(211, 28, 215));
+
+        jLabel1.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(4, 72, 210));
+        jLabel1.setText("Dashboard / Quản lý chi tiêu");
+
+        card2.setBackground(new java.awt.Color(10, 30, 214));
+        card2.setColorGradient(new java.awt.Color(72, 111, 252));
+
+        card3.setBackground(new java.awt.Color(194, 85, 1));
+        card3.setColorGradient(new java.awt.Color(255, 212, 99));
+
+        card4.setBackground(new java.awt.Color(60, 195, 0));
+        card4.setColorGradient(new java.awt.Color(208, 255, 90));
+
+        panelTransparent1.setTransparent(0.5F);
+
+        table1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Mô tả", "Loại", "Ví", "Số tiền", "Action"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(table1);
+        if (table1.getColumnModel().getColumnCount() > 0) {
+            table1.getColumnModel().getColumn(0).setPreferredWidth(150);
+        }
+
+        jLabel5.setFont(new java.awt.Font("sansserif", 1, 15)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(76, 76, 76));
+        jLabel5.setText("Giao dịch gần đây");
+        jLabel5.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
+
+        javax.swing.GroupLayout panelTransparent1Layout = new javax.swing.GroupLayout(panelTransparent1);
+        panelTransparent1.setLayout(panelTransparent1Layout);
+        panelTransparent1Layout.setHorizontalGroup(
+            panelTransparent1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTransparent1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelTransparent1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelTransparent1Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
+        );
+        panelTransparent1Layout.setVerticalGroup(
+            panelTransparent1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTransparent1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        panelTransparent2.setTransparent(0.5F);
+
+        jLabel3.setFont(new java.awt.Font("sansserif", 1, 12)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(105, 105, 105));
+        jLabel3.setText("Gợi ý chi tiêu & hóa đơn sắp tới");
+        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
+
+        jLabel2.setFont(new java.awt.Font("sansserif", 1, 15)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(76, 76, 76));
+        jLabel2.setText("Nhắc nhở tài chính");
+        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
+
+        jLabel4.setOpaque(true);
+
+        javax.swing.GroupLayout panelTransparent2Layout = new javax.swing.GroupLayout(panelTransparent2);
+        panelTransparent2.setLayout(panelTransparent2Layout);
+        panelTransparent2Layout.setHorizontalGroup(
+            panelTransparent2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTransparent2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelTransparent2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(noticeBoard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelTransparent2Layout.createSequentialGroup()
+                        .addGroup(panelTransparent2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(0, 257, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        panelTransparent2Layout.setVerticalGroup(
+            panelTransparent2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTransparent2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addGap(15, 15, 15)
+                .addComponent(jLabel3)
+                .addGap(9, 9, 9)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 1, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(1, 1, 1)
+                .addComponent(noticeBoard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(card1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(card2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(card3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(card4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(panelTransparent1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(panelTransparent2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(card1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(card2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(card3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(card4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panelTransparent2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelTransparent1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.raven.component.Card card1;
+    private com.raven.component.Card card2;
+    private com.raven.component.Card card3;
+    private com.raven.component.Card card4;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private com.raven.swing.noticeboard.NoticeBoard noticeBoard;
+    private com.raven.swing.PanelTransparent panelTransparent1;
+    private com.raven.swing.PanelTransparent panelTransparent2;
+    private com.raven.swing.table.Table table1;
+    // End of variables declaration//GEN-END:variables
+}
