@@ -4,6 +4,7 @@
 
 package com.mycompany.appquanlychitieu;
 import com.mycompany.appquanlychitieu.model.*;
+import com.mycompany.appquanlychitieu.service.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,149 +16,126 @@ import java.util.ArrayList;
 public class Appquanlychitieu {
 
     public static void main(String[] args) {
-        System.out.println("====== BAT DAU MO PHONG HE THONG QUAN LY CHI TIEU ======\n");
+        System.out.println("====== BAT DAU HE THONG QUAN LY CHI TIEU (CO LUU FILE) ======\n");
+
+        DataStore.loadData();
+        TransactionService service = new TransactionService();
 
         System.out.println("--- [1] Khoi tao du lieu ---");
-        
-        User user = new User(1L, "Duck Developer", "duck@code.com", "hashed_pass", "VND");
-        System.out.println("User: " + user.getSummary());
 
+        Account bankAcc = null; 
+        Account cashAcc = null;
+        Category catSalary, catFood, catDebtLending, catDebtCollection;
 
-        Account bankAcc = new Account(1L, "MB Bank", new BigDecimal("10000000"), "VND");
-        Account cashAcc = new Account(2L, "Vi Tien Mat", new BigDecimal("500000"), "VND");
-        
+        if (DataStore.accounts.isEmpty()) {
+            System.out.println(">> Phat hien lan chay dau tien. Tao du lieu mau...");
+            
+            User user = new User(1L, "Duck Developer", "duck@code.com", "VND"); 
+            
+            bankAcc = new Account(1L, "MB Bank", new BigDecimal("10000000"), "VND");
+            cashAcc = new Account(2L, "Vi Tien Mat", new BigDecimal("500000"), "VND");
+            DataStore.accounts.add(bankAcc);
+            DataStore.accounts.add(cashAcc);
+
+            catSalary = new Category(1L, "Luong", CategoryType.INCOME);
+            catFood = new Category(2L, "An uong", CategoryType.EXPENSE);
+            catDebtLending = new Category(3L, "Cho vay", CategoryType.EXPENSE);
+            catDebtCollection = new Category(4L, "Thu hoi no", CategoryType.INCOME);
+            
+            DataStore.categories.add(catSalary);
+            DataStore.categories.add(catFood);
+            DataStore.categories.add(catDebtLending);
+            DataStore.categories.add(catDebtCollection);
+
+            DataStore.saveData();
+        } else {
+            System.out.println(">> Da tim thay du lieu cu tu File.");
+            if (DataStore.accounts.size() >= 1) bankAcc = DataStore.accounts.get(0);
+            if (DataStore.accounts.size() >= 2) cashAcc = DataStore.accounts.get(1);
+            
+            catSalary = DataStore.categories.isEmpty() ? new Category(0L, "Ao", CategoryType.INCOME) : DataStore.categories.get(0);
+            catFood = DataStore.categories.size() > 1 ? DataStore.categories.get(1) : catSalary;
+            catDebtLending = DataStore.categories.size() > 2 ? DataStore.categories.get(2) : catSalary;
+            catDebtCollection = DataStore.categories.size() > 3 ? DataStore.categories.get(3) : catSalary;
+        }
+
+        if (bankAcc == null || cashAcc == null) {
+            System.err.println("LOI: Du lieu file khong du tai khoan de chay demo. Hay xoa file .dat va chay lai.");
+            return;
+        }
+
         printBalance(bankAcc);
         printBalance(cashAcc);
-
-        Category catSalary = new Category("Luong", CategoryType.INCOME, "icon_money", "green", null);
-        Category catFood = new Category("An uong", CategoryType.EXPENSE, "icon_food", "red", new BigDecimal("2000000"));
-        Category catDebtLending = new Category("Cho vay", CategoryType.EXPENSE, "icon_lending", "grey", null);
-        Category catDebtCollection = new Category("Thu hoi no", CategoryType.INCOME, "icon_collect", "green", null);
-
 
         System.out.println("\n--- [2] Giao dich: Nhan luong ---");
         NormalTransaction salaryTxn = new NormalTransaction(
-            1001L, new BigDecimal("15000000"), LocalDate.now(), bankAcc, catSalary
+            System.currentTimeMillis(), new BigDecimal("15000000"), LocalDate.now(), bankAcc, catSalary
         );
-        salaryTxn.setName("Luong Thang 10");
-
-        if (salaryTxn.isIncome()) {
-            bankAcc.credit(salaryTxn.getAmount());
-            System.out.println("Da nhan: " + formatMoney(salaryTxn.getAmount()) + " vao " + bankAcc.getName());
-        }
+        salaryTxn.setNote("Luong Thang 10");
+        service.addTransaction(salaryTxn); 
 
         System.out.println("\n--- [3] Giao dich: Di an nha hang ---");
         NormalTransaction foodTxn = new NormalTransaction(
-            1002L, new BigDecimal("500000"), LocalDate.now(), cashAcc, catFood
+            System.currentTimeMillis() + 1, new BigDecimal("500000"), LocalDate.now(), cashAcc, catFood
         );
-        foodTxn.setName("An toi");
-
-        if (foodTxn.isExpense()) {
-            cashAcc.debit(foodTxn.getAmount());
-            System.out.println("Da chi: " + formatMoney(foodTxn.getAmount()) + " tu " + cashAcc.getName());
-            
-            if (catFood.isOverBudget(foodTxn.getAmount())) {
-                System.out.println("CANH BAO: Vuot qua ngan sach!");
-            } else {
-                System.out.println("Ngan sach van on dinh.");
-            }
-        }
+        foodTxn.setNote("An toi");
+        service.addTransaction(foodTxn); 
 
         System.out.println("\n--- [4] Giao dich: Rut tien ve Vi ---");
         TransferTransaction transferTxn = new TransferTransaction(
-            1003L, new BigDecimal("2000000"), LocalDate.now(), bankAcc, cashAcc
+            System.currentTimeMillis() + 2, new BigDecimal("2000000"), LocalDate.now(), bankAcc, cashAcc, new BigDecimal("1100")
         );
-        transferTxn.setName("Rut tien tieu vat");
-        transferTxn.setTransferFee(new BigDecimal("1100"));
+        transferTxn.setNote("Rut tien tieu vat");
+        service.addTransaction(transferTxn);
 
-        bankAcc.debit(transferTxn.getAmount());
-        bankAcc.debit(new BigDecimal("1100")); 
-        cashAcc.credit(transferTxn.getAmount());
-        
-        System.out.println("Chuyen khoan thanh cong.");
         printBalance(bankAcc);
         printBalance(cashAcc);
 
-        System.out.println("\n--- [5] Quan ly No: Chu trinh Cho vay & Thu no ---");
+        System.out.println("\n--- [5] Quan ly No ---");
         
-        Debt loanDebt = new Debt();
-        loanDebt.setName("Khoan no cua Hung");
-        loanDebt.setPersonName("Nguyen Van Hung");
-        loanDebt.setPrincipalAmount(new BigDecimal("5000000")); 
-        loanDebt.setType(DebtType.LENDING);
-        loanDebt.setTransactions(new ArrayList<>());
-
+        Debt loanDebt = new Debt(1L, "No cua Hung", DebtType.LENDING, new BigDecimal("5000000"), "Nguyen Van Hung");
+        
         DebtTransaction lendingTxn = new DebtTransaction(
-            new BigDecimal("2000000"), LocalDate.now(), bankAcc, catDebtLending, loanDebt
+            System.currentTimeMillis() + 3, new BigDecimal("2000000"), LocalDate.now(), bankAcc, catDebtLending, loanDebt
         );
-        lendingTxn.setName("Giai ngan dot 1");
-        
-        bankAcc.debit(lendingTxn.getAmount());
-        loanDebt.getTransactions().add(lendingTxn);
-        System.out.println("Da cho Hung vay: " + formatMoney(lendingTxn.getAmount()));
+        service.addTransaction(lendingTxn);
+        System.out.println("Da cho vay: 2,000,000");
 
         DebtTransaction repaymentTxn = new DebtTransaction(
-            new BigDecimal("1000000"), LocalDate.now(), bankAcc, catDebtCollection, loanDebt
+            System.currentTimeMillis() + 4, new BigDecimal("1000000"), LocalDate.now(), bankAcc, catDebtCollection, loanDebt
         );
-        repaymentTxn.setName("Hung tra bot tien");
+        service.addTransaction(repaymentTxn);
+        System.out.println("Da thu no: 1,000,000");
+
+        System.out.println("\n--- [6] Recurring ---");
+        Category catInternet = new Category(99L, "Internet", CategoryType.EXPENSE);
         
-        bankAcc.credit(repaymentTxn.getAmount());
-        loanDebt.getTransactions().add(repaymentTxn); 
-        System.out.println("Hung da tra: " + formatMoney(repaymentTxn.getAmount()));
-
-        System.out.println(">> Tinh trang no hien tai:");
-        System.out.println("   - Tong goc: " + formatMoney(loanDebt.getPrincipalAmount()));
-        System.out.println("   - Da dua:   " + formatMoney(lendingTxn.getAmount())); 
-        System.out.println("   - Con lai phai thu (tuong doi): " + formatMoney(loanDebt.getRemainingAmount()));
-
-        System.out.println("\n--- [6] Giao dich tu dong (Recurring) ---");
         RecurringSchedule internetBill = new RecurringSchedule(
-            bankAcc, 
-            new Category("Internet", CategoryType.EXPENSE, "wifi", "blue", null), 
-            new BigDecimal("250000"), 
-            CycleType.MONTHLY, LocalDate.now(), 0, LocalTime.of(8, 0), true, LocalDate.now().plusYears(1), 12
+            1L, "Internet Bill", bankAcc, catInternet, new BigDecimal("250000"), CycleType.MONTHLY
         );
         
         NormalTransaction autoTxn = internetBill.generateTxn();
         if (autoTxn != null) {
-            autoTxn.setName("Auto-Payment Internet");
-            bankAcc.debit(autoTxn.getAmount()); 
-            System.out.println("He thong tu dong thanh toan: " + autoTxn.getName() + " | So tien: " + formatMoney(autoTxn.getAmount()));
+            autoTxn.setNote("Auto-Payment Internet");
+            service.addTransaction(autoTxn);
+            System.out.println("Da tu dong thanh toan Internet: 250,000");
         }
-
-        System.out.println("\n--- [7] Test logic: Tieu qua so du ---");
-        BigDecimal itemPrice = new BigDecimal("50000000"); 
-        System.out.println("Dang co gang mua xe may gia: " + formatMoney(itemPrice));
         
-        if (cashAcc.getBalance().compareTo(itemPrice) < 0) {
-            System.out.println("GIAO DICH THAT BAI: So du khong du!");
-        } else {
-            cashAcc.debit(itemPrice);
-        }
-
-
-        System.out.println("\n====== BAO CAO TONG KET ======");
-        
-        BigDecimal totalIncome = salaryTxn.getAmount().add(repaymentTxn.getAmount());
-        BigDecimal totalExpense = foodTxn.getAmount()
-                                 .add(lendingTxn.getAmount())
-                                 .add(autoTxn != null ? autoTxn.getAmount() : BigDecimal.ZERO)
-                                 .add(new BigDecimal("1100"));
-                                 
-        System.out.println("Tong Thu: " + formatMoney(totalIncome));
-        System.out.println("Tong Chi: " + formatMoney(totalExpense));
-        System.out.println("------------------------------");
+        System.out.println("\n====== TRANG THAI CUOI CUNG (DA LUU FILE) ======");
         printBalance(bankAcc);
         printBalance(cashAcc);
         
-        System.out.println("\nCHUONG TRINH KET THUC THANH CONG!");
+        System.out.println("Tong so giao dich da luu: " + DataStore.transactions.size());
+        System.out.println("Du lieu da duoc luu tai thu muc du an (.dat files)");
     }
 
     public static void printBalance(Account acc) {
-        System.out.println("[" + acc.getName() + "] So du: " + formatMoney(acc.getBalance()) + " " + acc.getCurrency());
+        if (acc != null) {
+            System.out.println("[" + acc.getName() + "] So du: " + formatMoney(acc.getBalance()) + " " + (acc.getCurrency() != null ? acc.getCurrency() : "VND"));
+        }
     }
 
     public static String formatMoney(BigDecimal amount) {
-        return String.format("%,.0f", amount);
+        return String.format("%,.0f %s", amount, "VND");
     }
 }
