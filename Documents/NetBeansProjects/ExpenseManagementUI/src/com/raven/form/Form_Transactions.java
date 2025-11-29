@@ -32,6 +32,7 @@ import javax.swing.table.DefaultTableModel;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JOptionPane;
 
 public class Form_Transactions extends JPanel {
 
@@ -319,24 +320,36 @@ public class Form_Transactions extends JPanel {
         loadTransactionsToTable();
     }
 
-    private void editTransactionAtRow(int rowIndex) {
-        if (rowIndex < 0 || currentList == null || rowIndex >= currentList.size()) {
-            return;
-        }
-        AbstractTransaction tx = currentList.get(rowIndex);
-        if (tx == null) return;
+private void editTransactionAtRow(int rowIndex) {
+    if (rowIndex < 0 || currentList == null || rowIndex >= currentList.size()) {
+        return;
+    }
+    AbstractTransaction tx = currentList.get(rowIndex);
+    if (tx == null) return;
 
-        Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
-        Dialog_Transaction dlg = new Dialog_Transaction(
-                parent,
-                true,
-                transactionService,
-                tx
+    // Chỉ cho phép sửa giao dịch Thu/Chi
+    if (!(tx instanceof NormalTransaction)) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Giao dịch này là CHUYỂN TIỀN.\n" +
+                "Hiện tại chỉ sửa được giao dịch Thu/Chi.\n" +
+                "Nếu muốn chỉnh, hãy xóa và tạo lại trong mục Chuyển tiền.",
+                "Không thể sửa",
+                JOptionPane.INFORMATION_MESSAGE
         );
-        dlg.setVisible(true);
-        loadTransactionsToTable();
+        return;
     }
 
+    Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
+    Dialog_Transaction dlg = new Dialog_Transaction(
+            parent,
+            true,
+            transactionService,
+            tx      // tx ở đây chắc chắn là NormalTransaction
+    );
+    dlg.setVisible(true);
+    loadTransactionsToTable();
+}
     // =================== TÍNH TỔNG THU / CHI / NET ===================
 
     private void updateSummary(List<AbstractTransaction> list) {
