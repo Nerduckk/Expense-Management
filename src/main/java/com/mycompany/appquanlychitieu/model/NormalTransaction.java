@@ -3,20 +3,24 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.appquanlychitieu.model;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 /**
  *
  * @author DAT
  */
 public class NormalTransaction extends AbstractTransaction{
     private Account account;
-    private Category category;
+    Category category;
+    
 
     public NormalTransaction() {
         super(null, BigDecimal.ZERO, LocalDate.now()); 
     }
     
+
     public NormalTransaction(Long id, BigDecimal amount, LocalDate date, Account account, Category category) {
         super(id, amount, date); 
         this.account = account;
