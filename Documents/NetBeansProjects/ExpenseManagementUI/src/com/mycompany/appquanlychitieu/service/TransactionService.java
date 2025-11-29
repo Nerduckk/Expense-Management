@@ -1,8 +1,10 @@
 package com.mycompany.appquanlychitieu.service;
 
 import com.mycompany.appquanlychitieu.model.*;
+import static com.raven.main.Main.dataStore;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionService {
@@ -29,12 +31,35 @@ public class TransactionService {
             }
         }
     }
-
     public void deleteTransaction(AbstractTransaction txn) {
-        DataStore.transactions.remove(txn);
-        DataStore.saveData();
+    // Hoàn tác số dư trước
+    if (txn instanceof TransferTransaction) {
+        // Giao dịch chuyển khoản
+        TransferTransaction tTxn = (TransferTransaction) txn;
+        BigDecimal totalDeduct = tTxn.getAmount().add(tTxn.getTransferFee());
+
+        // Lúc add: source.debit(totalDeduct), to.credit(amount)
+        // => Undo: source.credit(totalDeduct), to.debit(amount)
+        tTxn.getSourceAccount().credit(totalDeduct);
+        tTxn.getToAccount().debit(tTxn.getAmount());
+    } else {
+        // Giao dịch Thu/Chi
+        Account acc = txn.getSourceAccount();
+        if (acc != null) {
+            if (txn.isIncome()) {
+                // Lúc add: credit => undo: debit
+                acc.debit(txn.getAmount());
+            } else if (txn.isExpense()) {
+                // Lúc add: debit => undo: credit
+                acc.credit(txn.getAmount());
+            }
+        }
     }
 
+    // Rồi mới xóa khỏi datastore
+    DataStore.transactions.remove(txn);
+    DataStore.saveData();
+}
     public BigDecimal getTotalBalance() {
         return DataStore.accounts.stream()
                 .map(Account::getBalance)
