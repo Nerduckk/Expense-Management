@@ -81,18 +81,6 @@ public class DataStore {
             .anyMatch(c -> c.getType() == CategoryType.EXPENSE);
 
     boolean changed = false;
-
-    if (!hasIncome) {
-        Category luong = new Category(
-                "Lương",
-                CategoryType.INCOME,
-                "money",
-                "#4CAF50",
-                null
-        );
-        categories.add(luong);
-        changed = true;
-    }
     if (categories.isEmpty()) {
     categories.add(new Category("Lương",
             CategoryType.INCOME,
