@@ -54,6 +54,7 @@ public class Main extends javax.swing.JFrame {
         bg.setLayout(layout);
         menu = new Menu();
         header = new Header();
+        AppContext.setHeader(header); 
         main = new MainForm();
         IconFontSwing.register(GoogleMaterialDesignIcons.getIconFont());
         menu.addEvent(new EventMenuSelected() {
