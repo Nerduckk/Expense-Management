@@ -66,10 +66,10 @@
 
 **Nhóm Bài Tập Lớn OOP**
 
-| STT | Họ và Tên | Mã Sinh Viên | Vai Trò |
-|:---:|:---|:---:|:---|
-| 1 | **Nguyễn Tiến Đạt** | B23DCDT059 | ... |
-| 2 | **Dương Quốc Hoàng** | B23DCVT168 | ... |
-| 3 | **Đỗ Minh Tiến** | B23DCDT254 | ... |
-| 4 | **Lê Anh Việt** | B23DCVT453 | Trưởng nhóm |
-| 5 | **Nguyễn Hoàng Anh Đức** | B23DCVT097 | ... |
+| STT | Họ và Tên | Mã Sinh Viên | Vai Trò | Nhiệm vụ |
+|:---:|:---|:---:|:---|:---|
+| 1 | **Nguyễn Tiến Đạt** | B23DCDT059 | Thành viên | AbtractTransaction, RecurringSchedule, NormalTransaction, CycleType |
+| 2 | **Dương Quốc Hoàng** | B23DCVT168 | Thành viên | ... |
+| 3 | **Đỗ Minh Tiến** | B23DCDT254 | Thành viên | ... |
+| 4 | **Lê Anh Việt** | B23DCVT453 | Trưởng nhóm | ... |
+| 5 | **Nguyễn Hoàng Anh Đức** | B23DCVT097 | Thành viên | ... |
