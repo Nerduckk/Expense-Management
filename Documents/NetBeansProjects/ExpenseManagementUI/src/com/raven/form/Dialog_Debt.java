@@ -21,6 +21,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import com.toedter.calendar.JDateChooser;
+import java.awt.FlowLayout;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import javax.swing.SwingUtilities;
+
 
 public class Dialog_Debt extends JDialog {
 
@@ -32,7 +39,7 @@ public class Dialog_Debt extends JDialog {
     private JTextField txtPerson;
     private JTextField txtPrincipal;
     private JTextField txtInterest;
-    private JTextField txtDueDate;   // yyyy-MM-dd
+    private JDateChooser dateDueChooser;  
     private JComboBox<DebtStatus> comboStatus;
 
     public Dialog_Debt(Frame parent,
@@ -83,9 +90,15 @@ public class Dialog_Debt extends JDialog {
         mainPanel.add(txtInterest);
 
         // Ngày đến hạn
-        mainPanel.add(new JLabel("Ngày đến hạn (yyyy-MM-dd):"));
-        txtDueDate = new JTextField();
-        mainPanel.add(txtDueDate);
+        mainPanel.add(new JLabel("Ngày đến hạn:"));
+
+        dateDueChooser = new JDateChooser();
+        dateDueChooser.setDateFormatString("dd/MM/yyyy");      // hiển thị đẹp kiểu VN
+        dateDueChooser.setPreferredSize(new java.awt.Dimension(120, 24));
+        // Có thể set default là ngày hôm nay:
+        dateDueChooser.setDate(new Date());
+        mainPanel.add(dateDueChooser);
+
 
         // Trạng thái
         mainPanel.add(new JLabel("Trạng thái:"));
@@ -94,12 +107,15 @@ public class Dialog_Debt extends JDialog {
 
         JPanel buttonPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         JButton btnCancel = new JButton("Hủy");
+        JButton btnHistory = new JButton("Lịch sử trả/thu");
         JButton btnSave = new JButton("Lưu");
 
         btnCancel.addActionListener(e -> dispose());
+        btnHistory.addActionListener(e -> openHistory());
         btnSave.addActionListener(e -> onSave());
 
         buttonPanel.add(btnCancel);
+        buttonPanel.add(btnHistory);
         buttonPanel.add(btnSave);
 
         getContentPane().setLayout(new BorderLayout());
@@ -121,10 +137,13 @@ public class Dialog_Debt extends JDialog {
             txtInterest.setText(editingDebt.getInterestRate().toString());
         }
         if (editingDebt.getDueDate() != null) {
-            txtDueDate.setText(editingDebt.getDueDate().toString());  // yyyy-MM-dd
+        LocalDate ld = editingDebt.getDueDate();
+        Date d = Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        dateDueChooser.setDate(d);
         }
+
         comboStatus.setSelectedItem(editingDebt.getStatus());
-    }
+        }
 
     private void onSave() {
         String name = txtName.getText().trim();
@@ -158,17 +177,15 @@ public class Dialog_Debt extends JDialog {
         }
 
         // Ngày đến hạn
-        LocalDate due = null;
-        String dueStr = txtDueDate.getText().trim();
-        if (!dueStr.isEmpty()) {
-            try {
-                due = LocalDate.parse(dueStr);   // format yyyy-MM-dd
-            } catch (DateTimeParseException ex) {
-                showError("Ngày đến hạn không hợp lệ (định dạng yyyy-MM-dd)");
-                return;
-            }
+        Date utilDate = dateDueChooser.getDate();
+        if (utilDate == null) {
+           JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày đến hạn.");
+        return;
         }
 
+        LocalDate dueDate = utilDate.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate();
         DebtStatus status = (DebtStatus) comboStatus.getSelectedItem();
 
         if (editingDebt == null) {
@@ -179,7 +196,7 @@ public class Dialog_Debt extends JDialog {
 
             Debt d = new Debt(newId, name, type, principal, person);
             d.setInterestRate(interest);
-            d.setDueDate(due);
+            d.setDueDate(dueDate);
             d.setStatus(status);
 
             debtService.add(d);
@@ -189,7 +206,7 @@ public class Dialog_Debt extends JDialog {
             editingDebt.setPersonName(person);
             editingDebt.setPrincipalAmount(principal);
             editingDebt.setInterestRate(interest);
-            editingDebt.setDueDate(due);
+            editingDebt.setDueDate(dueDate);
             editingDebt.setStatus(status);
 
             debtService.update(editingDebt);
@@ -202,4 +219,19 @@ public class Dialog_Debt extends JDialog {
     private void showError(String m) {
         JOptionPane.showMessageDialog(this, m, "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
+    private void openHistory() {
+    if (editingDebt == null || editingDebt.getId() == null) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Chỉ xem lịch sử cho khoản nợ đã được lưu.",
+                "Thông báo",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+        return;
+    }
+
+    Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
+    Dialog_DebtHistory dlg = new Dialog_DebtHistory(parent, true, editingDebt);
+    dlg.setVisible(true);
+}
 }
