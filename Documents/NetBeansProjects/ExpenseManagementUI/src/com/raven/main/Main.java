@@ -274,6 +274,7 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void run() {
                 SwingAcrylic.prepareSwing();
+                LoginFrame login = new LoginFrame();
                 Main frame = new Main();
                 frame.setVisible(true);
                 SwingAcrylic.processFrame(frame);
