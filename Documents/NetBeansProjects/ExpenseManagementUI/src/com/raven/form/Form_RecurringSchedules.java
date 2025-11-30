@@ -8,21 +8,23 @@ import com.mycompany.appquanlychitieu.model.NormalTransaction;
 import com.mycompany.appquanlychitieu.model.RecurringSchedule;
 import com.mycompany.appquanlychitieu.service.DataStore;
 
+import com.toedter.calendar.JDateChooser;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import com.toedter.calendar.JDateChooser;
-import java.util.Date;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Quản lý các RecurringSchedule (giao dịch định kỳ).
- * Không đụng backend / model.
- * totalTerms được AUTO tính dựa trên chu kỳ (cycle), không dùng endDate.
+ * Thêm:
+ *  - Tổng số kỳ (totalTerms)
+ *  - Ngày kết thúc dự kiến: tính từ startDate + cycle * (totalTerms - 1)
  */
 public class Form_RecurringSchedules extends JPanel {
 
@@ -35,6 +37,8 @@ public class Form_RecurringSchedules extends JPanel {
     private final JComboBox<Account> cbAccount;
     private final JComboBox<Category> cbCategory;
     private final JComboBox<CycleType> cbCycle;
+    private final JSpinner spTotalTerms;
+    private final JTextField txtEndDate;
     private final JCheckBox chkAutoCreate;
 
     private final JButton btnNew;
@@ -79,12 +83,17 @@ public class Form_RecurringSchedules extends JPanel {
         txtName = new JTextField(20);
         txtAmount = new JTextField(20);
         dcStartDate = new JDateChooser();
-        dcStartDate.setDateFormatString("yyyy-MM-dd");  // hiển thị đẹp
+        dcStartDate.setDateFormatString("yyyy-MM-dd");
         dcStartDate.setOpaque(false);
 
         cbAccount = new JComboBox<>();
         cbCategory = new JComboBox<>();
         cbCycle = new JComboBox<>(CycleType.values());
+        spTotalTerms = new JSpinner(new SpinnerNumberModel(12, 1, 360, 1));
+        txtEndDate = new JTextField(20);
+        txtEndDate.setEditable(false);
+        txtEndDate.setFocusable(false);
+        txtEndDate.setBackground(UIManager.getColor("TextField.inactiveBackground"));
         chkAutoCreate = new JCheckBox("Tự tạo giao dịch đến hạn");
 
         btnNew = new JButton("Mới");
@@ -124,6 +133,16 @@ public class Form_RecurringSchedules extends JPanel {
         g.gridx = 1; g.weightx = 1;
         formPanel.add(cbCycle, g); row++;
 
+        g.gridx = 0; g.gridy = row; g.weightx = 0;
+        formPanel.add(new JLabel("Tổng số kỳ:"), g);
+        g.gridx = 1; g.weightx = 1;
+        formPanel.add(spTotalTerms, g); row++;
+
+        g.gridx = 0; g.gridy = row; g.weightx = 0;
+        formPanel.add(new JLabel("Kết thúc dự kiến:"), g);
+        g.gridx = 1; g.weightx = 1;
+        formPanel.add(txtEndDate, g); row++;
+
         g.gridx = 0; g.gridy = row; g.gridwidth = 2;
         g.weightx = 1;
         formPanel.add(chkAutoCreate, g); row++;
@@ -143,6 +162,8 @@ public class Form_RecurringSchedules extends JPanel {
         initComboData();
         reloadTable();
         initActions();
+        applyAutoTotalTermsForCurrentCycle();
+        updateEndDatePreview();
     }
 
     private void initComboData() {
@@ -205,6 +226,14 @@ public class Form_RecurringSchedules extends JPanel {
                 loadFromSelectedRow();
             }
         });
+
+        cbCycle.addActionListener(e -> {
+            applyAutoTotalTermsForCurrentCycle();
+            updateEndDatePreview();
+        });
+
+        dcStartDate.addPropertyChangeListener("date", evt -> updateEndDatePreview());
+        spTotalTerms.addChangeListener(e -> updateEndDatePreview());
     }
 
     private void clearForm() {
@@ -215,6 +244,8 @@ public class Form_RecurringSchedules extends JPanel {
         cbAccount.setSelectedIndex(cbAccount.getItemCount() > 0 ? 0 : -1);
         cbCategory.setSelectedIndex(cbCategory.getItemCount() > 0 ? 0 : -1);
         cbCycle.setSelectedIndex(0);
+        applyAutoTotalTermsForCurrentCycle();
+        txtEndDate.setText("");
         chkAutoCreate.setSelected(true);
         table.clearSelection();
     }
@@ -232,7 +263,7 @@ public class Form_RecurringSchedules extends JPanel {
         txtName.setText(rs.getName() == null ? "" : rs.getName());
         txtAmount.setText(rs.getAmount() == null ? "" : rs.getAmount().toPlainString());
         if (rs.getStartDate() != null) {
-        dcStartDate.setDate(java.sql.Date.valueOf(rs.getStartDate()));
+            dcStartDate.setDate(java.sql.Date.valueOf(rs.getStartDate()));
         } else {
             dcStartDate.setDate(null);
         }
@@ -240,11 +271,19 @@ public class Form_RecurringSchedules extends JPanel {
         cbCategory.setSelectedItem(rs.getCategory());
         cbCycle.setSelectedItem(rs.getCycle());
         chkAutoCreate.setSelected(rs.isAutoCreate());
+
+        Integer total = rs.getTotalTerms();
+        if (total != null && total > 0) {
+            spTotalTerms.setValue(total);
+        } else {
+            applyAutoTotalTermsForCurrentCycle();
+        }
+        updateEndDatePreview();
     }
 
     /**
-     * Tự tính tổng số kỳ (totalTerms) dựa trên chu kỳ.
-     * Bạn có thể chỉnh lại mapping này theo ý muốn.
+     * Tự tính tổng số kỳ (totalTerms) mặc định theo chu kỳ.
+     * Bạn có thể chỉnh lại mapping này nếu muốn.
      */
     private Integer calcAutoTotalTerms(CycleType cycle) {
         if (cycle == null) return null;
@@ -262,11 +301,55 @@ public class Form_RecurringSchedules extends JPanel {
         }
     }
 
+    private void applyAutoTotalTermsForCurrentCycle() {
+        CycleType cycle = (CycleType) cbCycle.getSelectedItem();
+        Integer autoTerms = calcAutoTotalTerms(cycle);
+        if (autoTerms != null) {
+            spTotalTerms.setValue(autoTerms);
+        }
+    }
+
+    private void updateEndDatePreview() {
+        Date selected = dcStartDate.getDate();
+        CycleType cycle = (CycleType) cbCycle.getSelectedItem();
+        int total = (Integer) spTotalTerms.getValue();
+
+        if (selected == null || cycle == null || total <= 0) {
+            txtEndDate.setText("");
+            return;
+        }
+
+        LocalDate start = selected.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate end = start;
+
+        switch (cycle) {
+            case DAILY:
+                end = start.plusDays(total - 1L);
+                break;
+            case WEEKLY:
+                end = start.plusWeeks(total - 1L);
+                break;
+            case MONTHLY:
+                end = start.plusMonths(total - 1L);
+                break;
+            case YEARLY:
+                end = start.plusYears(total - 1L);
+                break;
+            default:
+                break;
+        }
+
+        txtEndDate.setText(end.format(dateFmt));
+    }
+
     private void saveCurrent() {
         try {
             String name = txtName.getText().trim();
             String amountStr = txtAmount.getText().trim();
             Date selected = dcStartDate.getDate();
+
             if (name.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Tên không được để trống.");
                 return;
@@ -279,10 +362,11 @@ public class Form_RecurringSchedules extends JPanel {
                 JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được để trống.");
                 return;
             }
+
             BigDecimal amount = new BigDecimal(amountStr);
             LocalDate start = selected.toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
             Account acc = (Account) cbAccount.getSelectedItem();
             Category cat = (Category) cbCategory.getSelectedItem();
             CycleType cycle = (CycleType) cbCycle.getSelectedItem();
@@ -300,11 +384,13 @@ public class Form_RecurringSchedules extends JPanel {
             editing.setCycle(cycle);
             editing.setAutoCreate(auto);
 
-            // AUTO TÍNH totalTerms từ chu kỳ
-            Integer autoTerms = calcAutoTotalTerms(cycle);
-            editing.setTotalTerms(autoTerms);
+            int totalTerms = (Integer) spTotalTerms.getValue();
+            if (totalTerms <= 0) {
+                JOptionPane.showMessageDialog(this, "Tổng số kỳ phải lớn hơn 0.");
+                return;
+            }
+            editing.setTotalTerms(totalTerms);
 
-            // Nếu là thêm mới -> đưa vào DataStore
             if (!DataStore.recurringSchedules.contains(editing)) {
                 DataStore.recurringSchedules.add(editing);
             }
@@ -314,7 +400,8 @@ public class Form_RecurringSchedules extends JPanel {
             JOptionPane.showMessageDialog(this, "Đã lưu lịch định kỳ.");
             clearForm();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(),
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi: " + ex.getMessage(),
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -327,15 +414,18 @@ public class Form_RecurringSchedules extends JPanel {
         }
 
         List<RecurringSchedule> list = DataStore.recurringSchedules;
-        if (list == null || row >= list.size()) return;
+        if (list == null || row >= list.size()) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ.");
+            return;
+        }
 
+        RecurringSchedule rs = list.get(row);
         int opt = JOptionPane.showConfirmDialog(
                 this,
-                "Xóa lịch định kỳ đã chọn?",
-                "Xác nhận",
+                "Xóa lịch định kỳ: " + rs.getName() + " ?",
+                "Xác nhận xóa",
                 JOptionPane.YES_NO_OPTION
         );
-
         if (opt != JOptionPane.YES_OPTION) return;
 
         list.remove(row);
@@ -345,8 +435,7 @@ public class Form_RecurringSchedules extends JPanel {
     }
 
     /**
-     * Tạo 1 giao dịch cho kỳ hôm nay (nếu đến hạn).
-     * Logic giống đoạn cuối file gốc.
+     * Tạo 1 giao dịch định kỳ cho HÔM NAY từ schedule đang chọn (nếu đến hạn).
      */
     private void createOneForToday() {
         int row = table.getSelectedRow();
@@ -357,7 +446,7 @@ public class Form_RecurringSchedules extends JPanel {
 
         List<RecurringSchedule> list = DataStore.recurringSchedules;
         if (list == null || row >= list.size()) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy lịch định kỳ tương ứng.");
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ.");
             return;
         }
 
