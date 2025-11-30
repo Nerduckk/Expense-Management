@@ -34,6 +34,7 @@ import com.raven.form.Form_Transfer;
 import java.time.LocalDate;
 import com.mycompany.appquanlychitieu.model.RecurringSchedule;
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.raven.form.Form_AccountSettings;
 import com.raven.form.Form_RecurringSchedules;
 public class Main extends javax.swing.JFrame {
     public static DataStore dataStore;
@@ -106,8 +107,13 @@ public class Main extends javax.swing.JFrame {
                 dlg.setVisible(true);
                 main.showForm(new Form_Debts(AppContext.debtService));
             }
+        } else if (menuIndex == 4) {
+            if (subMenuIndex == -1 || subMenuIndex == 0) {
+                main.showForm(new Form_AccountSettings());
+            } else if (subMenuIndex == 1) {
+                // TODO: Form_BudgetSettings
+            }
         }
-
     }
 });
         main.showForm(new Form_Home(AppContext.transactionService));
