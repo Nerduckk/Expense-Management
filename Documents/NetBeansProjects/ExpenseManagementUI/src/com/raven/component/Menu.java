@@ -89,7 +89,6 @@ public class Menu extends PanelTransparent {
             new ImageIcon(getClass().getResource("/com/raven/icon/5.png")),
             "Cài đặt",
             "Tài khoản",
-            "Danh mục",
             "Hạn mức chi tiêu"
     ));
 }

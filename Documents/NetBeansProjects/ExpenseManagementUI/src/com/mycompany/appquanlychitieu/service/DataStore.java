@@ -81,31 +81,51 @@ public class DataStore {
             .anyMatch(c -> c.getType() == CategoryType.EXPENSE);
 
     boolean changed = false;
+    if (categories.isEmpty()) {
+    categories.add(new Category("Lương",
+            CategoryType.INCOME,
+            "money",
+            "#4CAF50",
+            null));
+    categories.add(new Category("Thưởng",
+            CategoryType.INCOME,
+            "card_giftcard",
+            "#4CAF50",
+            null));
+    categories.add(new Category("Được trả nợ",
+            CategoryType.INCOME,
+            "account_balance_wallet",
+            "#4CAF50",
+            null));
+    categories.add(new Category("Lãi cho vay",
+            CategoryType.INCOME,
+            "trending_up",
+            "#4CAF50",
+            null));
 
-    if (!hasIncome) {
-        Category luong = new Category(
-                "Lương",
-                CategoryType.INCOME,
-                "money",
-                "#4CAF50",
-                null
-        );
-        categories.add(luong);
-        changed = true;
-    }
+    categories.add(new Category("Ăn uống",
+            CategoryType.EXPENSE,
+            "restaurant",
+            "#F44336",
+            null));
+    categories.add(new Category("Sinh hoạt",
+            CategoryType.EXPENSE,
+            "home",
+            "#F44336",
+            null));
+    categories.add(new Category("Chi phí định kỳ",
+            CategoryType.EXPENSE,
+            "repeat",
+            "#FF9800",
+            null));
+    categories.add(new Category("Trả nợ",
+            CategoryType.EXPENSE,
+            "payments",
+            "#FF5722",
+            null));
 
-    if (!hasExpense) {
-        Category anUong = new Category(
-                "Ăn uống",
-                CategoryType.EXPENSE,
-                "restaurant",
-                "#F44336",
-                null
-        );
-        categories.add(anUong);
-        changed = true;
-    }
-
+    FileHelper.saveToFile(categories, FILE_CATEGORIES);
+}
     if (changed) {
         FileHelper.saveToFile(categories, FILE_CATEGORIES);
     }

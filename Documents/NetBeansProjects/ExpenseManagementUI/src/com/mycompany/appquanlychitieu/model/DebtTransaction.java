@@ -1,12 +1,11 @@
 package com.mycompany.appquanlychitieu.model;
 
+import com.mycompany.appquanlychitieu.service.DataStore;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class DebtTransaction extends NormalTransaction {
     private Debt debt;
-
-    // SỬA: Thêm Long id vào tham số đầu tiên để khớp với Main
     public DebtTransaction(Long id, BigDecimal amount, LocalDate date, Account account, Category category, Debt debt) {
         // Truyền id lên cha
         super(id, amount, date, account, category);
@@ -30,6 +29,13 @@ public class DebtTransaction extends NormalTransaction {
         if (debt.getType() == DebtType.LENDING && category.getType() == CategoryType.EXPENSE) return true;
         return false;
     }
+    private Category findCategory(String name, CategoryType type) {
+    return DataStore.categories.stream()
+            .filter(c -> c.getName().equalsIgnoreCase(name)
+                      && c.getType() == type)
+            .findFirst()
+            .orElse(null);   // nếu không tìm thấy thì trả null, UI vẫn chạy nhưng k có category
+}
 
     public Debt getDebt() { return debt; }
     public void setDebt(Debt debt) { this.debt = debt; }

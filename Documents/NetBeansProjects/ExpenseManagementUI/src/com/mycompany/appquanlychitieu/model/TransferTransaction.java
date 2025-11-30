@@ -12,8 +12,6 @@ public class TransferTransaction extends AbstractTransaction {
         setAccounts(from, to);
         this.transferFee = BigDecimal.ZERO;
     }
-    
-    // Thêm constructor đầy đủ nếu cần set phí ngay lúc tạo
     public TransferTransaction(Long id, BigDecimal amount, LocalDate date, Account from, Account to, BigDecimal fee) {
         super(id, amount, date);
         setAccounts(from, to);
@@ -33,8 +31,6 @@ public class TransferTransaction extends AbstractTransaction {
         }
         this.transferFee = (transferFee == null) ? BigDecimal.ZERO : transferFee;
     }
-
-    // --- CÁC GETTER BỊ THIẾU (CẦN THÊM VÀO) ---
     public Account getToAccount() { return toAccount; }
     public Account getFromAccount() { return fromAccount; }
     public BigDecimal getTransferFee() { return transferFee; }
