@@ -31,6 +31,9 @@ import java.math.BigDecimal;
 import com.raven.form.Form_Categories;
 import com.raven.form.Form_Debts;
 import com.raven.form.Form_Transfer;
+import java.time.LocalDate;
+import com.mycompany.appquanlychitieu.model.RecurringSchedule;
+import com.mycompany.appquanlychitieu.model.NormalTransaction;
 public class Main extends javax.swing.JFrame {
     public static DataStore dataStore;
     private MigLayout layout;
@@ -197,6 +200,38 @@ public class Main extends javax.swing.JFrame {
     public static void main(String args[]) {
          dataStore = new DataStore();
          dataStore.loadData();
+         LocalDate today = LocalDate.now();
+    int created = 0;
+
+    if (DataStore.recurringSchedules != null) {
+        for (RecurringSchedule rs : DataStore.recurringSchedules) {
+            if (rs == null) continue;
+
+            // Dùng hàm mình design:
+            NormalTransaction tx = rs.createTransactionIfDue(today);
+            if (tx != null) {
+                // Thêm vào hệ thống giao dịch
+                AppContext.transactionService.addTransaction(tx);
+                created++;
+            }
+        }
+    }
+
+    if (created > 0) {
+        DataStore.saveData();
+        System.out.println("Đã tạo " + created + " giao dịch định kỳ cho ngày " + today);
+    }
+    // ==== HẾT PHẦN LỊCH ĐỊNH KỲ ====
+
+    if (DataStore.accounts.isEmpty()) {
+        Account cash = new Account(1L, "Tiền mặt",
+                new BigDecimal("2000000"), "VND");
+        Account bank = new Account(2L, "Vietcombank",
+                new BigDecimal("5000000"), "VND");
+        DataStore.accounts.add(cash);
+        DataStore.accounts.add(bank);
+    }
+
         if (DataStore.accounts.isEmpty()) {
         Account cash = new Account(1L, "Tiền mặt",
                 new BigDecimal("2000000"), "VND");
