@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.mycompany.appquanlychitieu.model.TransferTransaction;
 import java.text.DecimalFormat;
 
 
@@ -63,17 +64,50 @@ private void reloadTable() {
 }
 private void initTableData() {
     tableEvent = new EventAction() {
+
         @Override
         public void delete(ModelTransaction tx) {
+            if (tx.getRawTransaction() instanceof TransferTransaction) {
+                showMessage("Không thể xoá giao dịch CHUYỂN KHOẢN.");
+                return;
+            }
+
+            int opt = JOptionPane.showConfirmDialog(
+                    Form_Home.this,
+                    "Xóa giao dịch:\n" + tx.getDescription() + " ?",
+                    "Xác nhận xóa",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (opt != JOptionPane.YES_OPTION) {
+                return;
+            }
+
             transactionService.deleteTransaction(tx.getRawTransaction());
-            DataStore.saveData();  
+            DataStore.saveData();
+            reloadTable();
+            initCardData();   // nếu bạn có hàm này để cập nhật thẻ tổng quan
             showMessage("Đã xoá giao dịch: " + tx.getDescription());
-            reloadTable();        
         }
 
         @Override
         public void update(ModelTransaction tx) {
-            showMessage("Chức năng cập nhật chưa hỗ trợ.");
+            // Không cho sửa giao dịch chuyển khoản
+            if (tx.getRawTransaction() instanceof TransferTransaction) {
+                showMessage("Không thể sửa giao dịch CHUYỂN KHOẢN tại đây.");
+                return;
+            }
+
+            Dialog_Transaction dlg = new Dialog_Transaction(
+                    (Frame) SwingUtilities.getWindowAncestor(Form_Home.this),
+                    true,
+                    AppContext.transactionService,
+                    tx.getRawTransaction()
+            );
+            dlg.setVisible(true);
+
+            DataStore.saveData();
+            reloadTable();
+            initCardData();   // nếu có
         }
     };
 
