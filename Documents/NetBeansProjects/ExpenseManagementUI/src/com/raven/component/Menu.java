@@ -63,7 +63,8 @@ public class Menu extends PanelTransparent {
             new ImageIcon(getClass().getResource("/com/raven/icon/2.png")),
             "Giao dịch",
             "Danh sách",
-            "Thêm mới"
+            "Thêm mới",
+            "Định kỳ"
     ));
 
     // 2 - Ví
