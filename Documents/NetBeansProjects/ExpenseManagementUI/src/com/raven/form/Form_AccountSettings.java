@@ -23,99 +23,99 @@ public class Form_AccountSettings extends JPanel {
     }
 
     private void initComponents() {
-        setOpaque(false);
+    setOpaque(false);
 
-        // Nhóm 1: Thông tin tài khoản
-        JLabel lblTitleProfile = new JLabel("Thông tin tài khoản");
-        lblTitleProfile.setFont(lblTitleProfile.getFont().deriveFont(Font.BOLD, 16f));
+    JLabel lblTitleProfile = new JLabel("Thông tin tài khoản");
+    lblTitleProfile.setFont(lblTitleProfile.getFont().deriveFont(Font.BOLD, 16f));
 
-        JLabel lblName = new JLabel("Tên hiển thị:");
-        JLabel lblEmail = new JLabel("Email:");
+    JLabel lblName = new JLabel("Tên hiển thị:");
+    JLabel lblEmail = new JLabel("Email:");
 
-        txtName = new JTextField(25);
-        txtEmail = new JTextField(25);
+    txtName = new JTextField(25);
+    txtEmail = new JTextField(25);
 
-        btnSaveProfile = new JButton("Lưu thông tin");
+    btnSaveProfile = new JButton("Lưu thông tin");
 
-        // Nhóm 2: Đổi mật khẩu
-        JLabel lblTitlePassword = new JLabel("Đổi mật khẩu");
-        lblTitlePassword.setFont(lblTitlePassword.getFont().deriveFont(Font.BOLD, 16f));
+    JLabel lblTitlePassword = new JLabel("Đổi mật khẩu");
+    lblTitlePassword.setFont(lblTitlePassword.getFont().deriveFont(Font.BOLD, 16f));
 
-        JLabel lblCurrentPass = new JLabel("Mật khẩu hiện tại:");
-        JLabel lblNewPass = new JLabel("Mật khẩu mới:");
-        JLabel lblConfirmPass = new JLabel("Xác nhận mật khẩu:");
+    JLabel lblCurrentPass = new JLabel("Mật khẩu hiện tại:");
+    JLabel lblNewPass = new JLabel("Mật khẩu mới:");
+    JLabel lblConfirmPass = new JLabel("Xác nhận mật khẩu:");
 
-        txtCurrentPass = new JPasswordField(25);
-        txtNewPass = new JPasswordField(25);
-        txtConfirmPass = new JPasswordField(25);
+    txtCurrentPass = new JPasswordField(25);
+    txtNewPass = new JPasswordField(25);
+    txtConfirmPass = new JPasswordField(25);
 
-        btnChangePassword = new JButton("Đổi mật khẩu");
+    btnChangePassword = new JButton("Đổi mật khẩu");
 
-        // Layout bằng GroupLayout cho gọn
-        GroupLayout layout = new GroupLayout(this);
-        setLayout(layout);
+    // ❗ Tạo 1 separator dùng chung cho cả 2 group
+    JSeparator sep = new JSeparator();
 
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
+    GroupLayout layout = new GroupLayout(this);
+    setLayout(layout);
+    layout.setAutoCreateGaps(true);
+    layout.setAutoCreateContainerGaps(true);
 
-        // Horizontal
-        layout.setHorizontalGroup(
-            layout.createParallelGroup()
-                .addComponent(lblTitleProfile)
-                .addGroup(layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addComponent(lblName)
-                        .addComponent(lblEmail))
-                    .addGroup(layout.createParallelGroup()
-                        .addComponent(txtName)
-                        .addComponent(txtEmail)))
-                .addComponent(btnSaveProfile, GroupLayout.Alignment.TRAILING)
-                .addGap(20)
-                .addComponent(new JSeparator())
-                .addComponent(lblTitlePassword)
-                .addGroup(layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addComponent(lblCurrentPass)
-                        .addComponent(lblNewPass)
-                        .addComponent(lblConfirmPass))
-                    .addGroup(layout.createParallelGroup()
-                        .addComponent(txtCurrentPass)
-                        .addComponent(txtNewPass)
-                        .addComponent(txtConfirmPass)))
-                .addComponent(btnChangePassword, GroupLayout.Alignment.TRAILING)
-        );
-
-        // Vertical
-        layout.setVerticalGroup(
-            layout.createSequentialGroup()
-                .addComponent(lblTitleProfile)
-                .addGap(10)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+    // HORIZONTAL
+    layout.setHorizontalGroup(
+        layout.createParallelGroup()
+            .addComponent(lblTitleProfile)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(lblName)
-                    .addComponent(txtName))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblEmail)
-                    .addComponent(txtEmail))
-                .addGap(10)
-                .addComponent(btnSaveProfile)
-                .addGap(20)
-                .addComponent(new JSeparator(), GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
-                .addGap(10)
-                .addComponent(lblTitlePassword)
-                .addGap(10)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblEmail))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(txtName)
+                    .addComponent(txtEmail)))
+            .addComponent(btnSaveProfile, GroupLayout.Alignment.TRAILING)
+            .addGap(20)
+            .addComponent(sep)   // dùng cùng 1 biến sep
+            .addComponent(lblTitlePassword)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(lblCurrentPass)
-                    .addComponent(txtCurrentPass))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNewPass)
-                    .addComponent(txtNewPass))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblConfirmPass)
-                    .addComponent(txtConfirmPass))
-                .addGap(10)
-                .addComponent(btnChangePassword)
-        );
-    }
+                    .addComponent(lblConfirmPass))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(txtCurrentPass)
+                    .addComponent(txtNewPass)
+                    .addComponent(txtConfirmPass)))
+            .addComponent(btnChangePassword, GroupLayout.Alignment.TRAILING)
+    );
+
+    // VERTICAL
+    layout.setVerticalGroup(
+        layout.createSequentialGroup()
+            .addComponent(lblTitleProfile)
+            .addGap(10)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(lblName)
+                .addComponent(txtName))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(lblEmail)
+                .addComponent(txtEmail))
+            .addGap(10)
+            .addComponent(btnSaveProfile)
+            .addGap(20)
+            .addComponent(sep, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)  // vẫn là sep
+            .addGap(10)
+            .addComponent(lblTitlePassword)
+            .addGap(10)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(lblCurrentPass)
+                .addComponent(txtCurrentPass))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(lblNewPass)
+                .addComponent(txtNewPass))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(lblConfirmPass)
+                .addComponent(txtConfirmPass))
+            .addGap(10)
+            .addComponent(btnChangePassword)
+    );
+}
+
 
     private void loadCurrentUser() {
         User u = AppContext.getCurrentUser();
