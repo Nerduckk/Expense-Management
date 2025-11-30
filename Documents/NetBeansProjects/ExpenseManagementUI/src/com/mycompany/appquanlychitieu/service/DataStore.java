@@ -15,6 +15,7 @@ public class DataStore {
     public static List<Category> categories;
     public static List<AbstractTransaction> transactions;
     public static List<Debt> debts;
+    public static List<RecurringSchedule> recurringSchedules = new ArrayList<>();
 
 
     public static void loadData() {
