@@ -9,12 +9,16 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.mycompany.appquanlychitieu.AppContext;
+import com.mycompany.appquanlychitieu.service.DataStore;
 
 public class Form_RecurringSchedules extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnEdit, btnDelete, btnRefresh;
+    private JButton btnAdd, btnEdit, btnDelete, btnRefresh, btnRunToday;
     private final DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public Form_RecurringSchedules() {
@@ -34,11 +38,14 @@ public class Form_RecurringSchedules extends JPanel {
         btnEdit = new JButton("Sửa");
         btnDelete = new JButton("Xóa");
         btnRefresh = new JButton("Làm mới");
+        btnRunToday = new JButton("Tạo kỳ hôm nay");
 
         btnAdd.addActionListener(e -> onAdd());
         btnEdit.addActionListener(e -> onEdit());
         btnDelete.addActionListener(e -> onDelete());
         btnRefresh.addActionListener(e -> loadData());
+        btnRunToday.addActionListener(e -> onRunToday());
+
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
@@ -47,6 +54,7 @@ public class Form_RecurringSchedules extends JPanel {
         rightButtons.add(btnEdit);
         rightButtons.add(btnDelete);
         rightButtons.add(btnRefresh);
+        rightButtons.add(btnRunToday);
 
         topPanel.add(lblTitle, BorderLayout.WEST);
         topPanel.add(rightButtons, BorderLayout.EAST);
@@ -190,4 +198,37 @@ public class Form_RecurringSchedules extends JPanel {
         DataStore.saveData();
         loadData();
     }
+    private void onRunToday() {
+    Long id = getSelectedId();
+    if (id == null) {
+        JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 lịch để chạy.");
+        return;
+    }
+
+    RecurringSchedule rs = findById(id);
+    if (rs == null) {
+        JOptionPane.showMessageDialog(this, "Không tìm thấy lịch tương ứng.");
+        return;
+    }
+
+    LocalDate today = LocalDate.now();
+    NormalTransaction txn = rs.createTransactionIfDue(today);
+    if (txn == null) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Hôm nay không phải kỳ đến hạn (hoặc lịch đã hết số kỳ)."
+        );
+        return;
+    }
+
+    AppContext.transactionService.addTransaction(txn);
+    DataStore.saveData();
+
+    JOptionPane.showMessageDialog(
+            this,
+            "Đã tạo 1 giao dịch định kỳ cho hôm nay:\n" +
+                    txn.getName() + " - " + txn.getAmount()
+    );
+}
+
 }
