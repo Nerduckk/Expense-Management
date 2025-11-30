@@ -27,7 +27,6 @@ public class Form_AccountSettings extends JPanel {
     setOpaque(false);
 
     JLabel lblTitleProfile = new JLabel("Thông tin tài khoản");
-    btnChangeAvatar = new JButton("Đổi ảnh đại diện");
     lblTitleProfile.setFont(lblTitleProfile.getFont().deriveFont(Font.BOLD, 16f));
 
     JLabel lblName = new JLabel("Tên hiển thị:");
@@ -37,6 +36,7 @@ public class Form_AccountSettings extends JPanel {
     txtEmail = new JTextField(25);
 
     btnSaveProfile = new JButton("Lưu thông tin");
+    btnChangeAvatar = new JButton("Đổi ảnh đại diện");   // NÚT MỚI
 
     JLabel lblTitlePassword = new JLabel("Đổi mật khẩu");
     lblTitlePassword.setFont(lblTitlePassword.getFont().deriveFont(Font.BOLD, 16f));
@@ -51,7 +51,6 @@ public class Form_AccountSettings extends JPanel {
 
     btnChangePassword = new JButton("Đổi mật khẩu");
 
-    // ❗ Tạo 1 separator dùng chung cho cả 2 group
     JSeparator sep = new JSeparator();
 
     GroupLayout layout = new GroupLayout(this);
@@ -59,7 +58,7 @@ public class Form_AccountSettings extends JPanel {
     layout.setAutoCreateGaps(true);
     layout.setAutoCreateContainerGaps(true);
 
-    // HORIZONTAL
+    // ===== HORIZONTAL =====
     layout.setHorizontalGroup(
         layout.createParallelGroup()
             .addComponent(lblTitleProfile)
@@ -70,9 +69,13 @@ public class Form_AccountSettings extends JPanel {
                 .addGroup(layout.createParallelGroup()
                     .addComponent(txtName)
                     .addComponent(txtEmail)))
-            .addComponent(btnSaveProfile, GroupLayout.Alignment.TRAILING)
+            // hàng 2 nút: Đổi avatar bên trái, Lưu bên phải
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(btnChangeAvatar)
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(btnSaveProfile))
             .addGap(20)
-            .addComponent(sep)   // dùng cùng 1 biến sep
+            .addComponent(sep)
             .addComponent(lblTitlePassword)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
@@ -86,7 +89,7 @@ public class Form_AccountSettings extends JPanel {
             .addComponent(btnChangePassword, GroupLayout.Alignment.TRAILING)
     );
 
-    // VERTICAL
+    // ===== VERTICAL =====
     layout.setVerticalGroup(
         layout.createSequentialGroup()
             .addComponent(lblTitleProfile)
@@ -98,9 +101,12 @@ public class Form_AccountSettings extends JPanel {
                 .addComponent(lblEmail)
                 .addComponent(txtEmail))
             .addGap(10)
-            .addComponent(btnSaveProfile)
+            // hàng 2 nút
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(btnChangeAvatar)
+                .addComponent(btnSaveProfile))
             .addGap(20)
-            .addComponent(sep, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)  // vẫn là sep
+            .addComponent(sep, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
             .addGap(10)
             .addComponent(lblTitlePassword)
             .addGap(10)
@@ -117,8 +123,6 @@ public class Form_AccountSettings extends JPanel {
             .addComponent(btnChangePassword)
     );
 }
-
-
     private void loadCurrentUser() {
         User u = AppContext.getCurrentUser();
         if (u != null) {
@@ -130,6 +134,7 @@ public class Form_AccountSettings extends JPanel {
     private void initActions() {
         btnSaveProfile.addActionListener(e -> onSaveProfile());
         btnChangePassword.addActionListener(e -> onChangePassword());
+        btnChangeAvatar.addActionListener(e -> onChangeAvatar());
     }
 
     private void onSaveProfile() {
