@@ -13,7 +13,12 @@ public class Header extends PanelTransparent {
     public void addMenuEvent(ActionListener event) {
         cmdMenu.addActionListener(event);
     }
-
+        public void setUserName(String name) {
+        lbUserName.setText(name);
+    }
+    public void setRole(String role) {
+        lbRole.setText(role);
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
