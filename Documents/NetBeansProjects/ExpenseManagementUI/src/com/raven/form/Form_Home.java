@@ -31,6 +31,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.mycompany.appquanlychitieu.model.TransferTransaction;
+import java.text.DecimalFormat;
 
 
 public class Form_Home extends javax.swing.JPanel {
@@ -62,17 +64,50 @@ private void reloadTable() {
 }
 private void initTableData() {
     tableEvent = new EventAction() {
+
         @Override
         public void delete(ModelTransaction tx) {
+            if (tx.getRawTransaction() instanceof TransferTransaction) {
+                showMessage("Không thể xoá giao dịch CHUYỂN KHOẢN.");
+                return;
+            }
+
+            int opt = JOptionPane.showConfirmDialog(
+                    Form_Home.this,
+                    "Xóa giao dịch:\n" + tx.getDescription() + " ?",
+                    "Xác nhận xóa",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (opt != JOptionPane.YES_OPTION) {
+                return;
+            }
+
             transactionService.deleteTransaction(tx.getRawTransaction());
-            DataStore.saveData();  
+            DataStore.saveData();
+            reloadTable();
+            initCardData();   // nếu bạn có hàm này để cập nhật thẻ tổng quan
             showMessage("Đã xoá giao dịch: " + tx.getDescription());
-            reloadTable();        
         }
 
         @Override
         public void update(ModelTransaction tx) {
-            showMessage("Chức năng cập nhật chưa hỗ trợ.");
+            // Không cho sửa giao dịch chuyển khoản
+            if (tx.getRawTransaction() instanceof TransferTransaction) {
+                showMessage("Không thể sửa giao dịch CHUYỂN KHOẢN tại đây.");
+                return;
+            }
+
+            Dialog_Transaction dlg = new Dialog_Transaction(
+                    (Frame) SwingUtilities.getWindowAncestor(Form_Home.this),
+                    true,
+                    AppContext.transactionService,
+                    tx.getRawTransaction()
+            );
+            dlg.setVisible(true);
+
+            DataStore.saveData();
+            reloadTable();
+            initCardData();   // nếu có
         }
     };
 
@@ -115,87 +150,142 @@ private void initCardData() {
 private void initNoticeBoard() {
     java.time.LocalDate today = java.time.LocalDate.now();
     java.time.LocalDate to = today.plusDays(7);
+    java.text.DecimalFormat fmt = new java.text.DecimalFormat("#,##0");
 
+    // Header ngày hôm nay
+    noticeBoard.addDate(today.toString());
+    java.time.LocalDate currentDate = today;
+
+    // ====== 1) HẠN MỨC CHI TIÊU THÁNG ======
+    try {
+        if (Form_BudgetSettings.isLimitEnabled()) {
+            java.math.BigDecimal limit = Form_BudgetSettings.getCurrentLimit();
+            if (limit != null && limit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                int month = today.getMonthValue();
+                int year = today.getYear();
+
+                java.math.BigDecimal spent = transactionService.getTotalExpenseMonth(month, year);
+                if (spent == null) spent = java.math.BigDecimal.ZERO;
+                if (spent.signum() < 0) spent = spent.negate();
+
+                java.math.BigDecimal percentBD = spent
+                        .multiply(java.math.BigDecimal.valueOf(100))
+                        .divide(limit, 0, java.math.RoundingMode.HALF_UP);
+                int percent = percentBD.intValue();
+                int warn = Form_BudgetSettings.getWarnPercent();
+
+                java.awt.Color color;
+                if (percent >= 100) {
+                    color = new java.awt.Color(220, 53, 69);      // đỏ: vượt hạn mức
+                } else if (percent >= warn) {
+                    color = new java.awt.Color(255, 193, 7);      // vàng: sắp chạm
+                } else {
+                    color = new java.awt.Color(40, 167, 69);      // xanh: an toàn
+                }
+
+                String title = "Hạn mức chi tiêu tháng " + month + "/" + year;
+                String time = "";
+                String desc = "Đã chi: " + fmt.format(spent)
+                        + " / Hạn mức: " + fmt.format(limit)
+                        + " (" + percent + "%)";
+
+                noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                        color,
+                        title,
+                        time,
+                        desc
+                ));
+            }
+        }
+    } catch (Exception ex) {
+        // nếu có lỗi gì thì bỏ qua phần hạn mức, tránh vỡ cả noticeBoard
+        ex.printStackTrace();
+    }
+
+    // ====== 2) PHẦN NỢ ======
     java.util.List<com.mycompany.appquanlychitieu.model.Debt> allDebts =
             com.mycompany.appquanlychitieu.service.DataStore.debts;
 
+    java.util.List<com.mycompany.appquanlychitieu.model.Debt> upcoming = java.util.Collections.emptyList();
+
     if (allDebts == null || allDebts.isEmpty()) {
-        noticeBoard.addDate(today.toString());
+        // Không có nợ nào
         noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-                new Color(0, 153, 51),
+                new java.awt.Color(0, 153, 51),
                 "Không có khoản nợ nào",
                 "",
                 "Hiện tại bạn chưa ghi nhận khoản nợ nào trong hệ thống."
         ));
 
         noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-                new Color(0, 153, 51),
+                new java.awt.Color(0, 153, 51),
                 "Không có khoản nợ sắp đến hạn",
                 "",
                 "Trong 7 ngày tới không có khoản nợ nào đến hạn."
         ));
-        noticeBoard.scrollToTop();
-        return;
-    }
+    } else {
+        // Lọc các khoản nợ ACTIVE và đến hạn trong 7 ngày tới
+        upcoming =
+                allDebts.stream()
+                        .filter(java.util.Objects::nonNull)
+                        .filter(d -> d.getStatus() == com.mycompany.appquanlychitieu.model.DebtStatus.ACTIVE)
+                        .filter(d -> {
+                            java.time.LocalDate due = d.getDueDate();
+                            return due != null
+                                    && !due.isBefore(today)
+                                    && !due.isAfter(to);
+                        })
+                        .sorted(java.util.Comparator.comparing(
+                                com.mycompany.appquanlychitieu.model.Debt::getDueDate
+                        ))
+                        .toList();
 
-    java.util.List<com.mycompany.appquanlychitieu.model.Debt> upcoming =
-            allDebts.stream()
-                    .filter(d -> d.getDueDate() != null
-                            && !d.getDueDate().isBefore(today)
-                            && !d.getDueDate().isAfter(to))
-                    .sorted(java.util.Comparator.comparing(
-                            com.mycompany.appquanlychitieu.model.Debt::getDueDate
-                    ))
-                    .toList();
-
-    if (upcoming.isEmpty()) {
-        noticeBoard.addDate(today.toString());
-        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-                new Color(0, 153, 51),
-                "Không có khoản nợ sắp đến hạn",
-                "",
-                "Trong 7 ngày tới không có khoản nợ nào đến hạn."
-        ));
-        // KHÔNG return nữa, để còn show recurring schedule bên dưới
-    }
-
-    java.time.LocalDate currentDate = null;
-    java.text.DecimalFormat fmt = new java.text.DecimalFormat("#,##0");
-
-    // ====== PHẦN NỢ ======
-    for (com.mycompany.appquanlychitieu.model.Debt d : upcoming) {
-        java.time.LocalDate due = d.getDueDate();
-        if (currentDate == null || !currentDate.equals(due)) {
-            currentDate = due;
-            noticeBoard.addDate(due.toString());
-        }
-
-        String title;
-        if (d.getType() == com.mycompany.appquanlychitieu.model.DebtType.BORROWING) {
-            title = "Hạn trả nợ cho " + d.getPersonName();
+        if (upcoming.isEmpty()) {
+            noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                    new java.awt.Color(0, 153, 51),
+                    "Không có khoản nợ sắp đến hạn",
+                    "",
+                    "Trong 7 ngày tới không có khoản nợ nào đến hạn."
+            ));
         } else {
-            title = "Thu nợ từ " + d.getPersonName();
+            for (com.mycompany.appquanlychitieu.model.Debt d : upcoming) {
+                java.time.LocalDate due = d.getDueDate();
+                if (due == null) continue;
+
+                if (!due.equals(currentDate)) {
+                    currentDate = due;
+                    noticeBoard.addDate(due.toString());
+                }
+
+                String title;
+                if (d.getType() == com.mycompany.appquanlychitieu.model.DebtType.BORROWING) {
+                    title = "Hạn trả nợ cho " + d.getPersonName();
+                } else {
+                    title = "Thu nợ từ " + d.getPersonName();
+                }
+
+                String time = "";
+                String desc = "Số tiền còn lại: " + fmt.format(d.getRemainingAmount())
+                        + " / Gốc: " + fmt.format(d.getPrincipalAmount());
+
+                noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                        new java.awt.Color(238, 46, 57),
+                        title,
+                        time,
+                        desc
+                ));
+            }
         }
-
-        String time = "";
-        String desc = "Số tiền còn lại: " + fmt.format(d.getRemainingAmount())
-                + " / Gốc: " + fmt.format(d.getPrincipalAmount());
-
-        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-                new Color(238, 46, 57),
-                title,
-                time,
-                desc
-        ));
     }
 
-    // ====== PHẦN GIAO DỊCH ĐỊNH KỲ ======
+    // ====== 3) PHẦN GIAO DỊCH ĐỊNH KỲ ======
     java.util.List<com.mycompany.appquanlychitieu.model.RecurringSchedule> recList =
             com.mycompany.appquanlychitieu.service.DataStore.recurringSchedules;
 
     if (recList != null && !recList.isEmpty()) {
         java.util.List<com.mycompany.appquanlychitieu.model.RecurringSchedule> upcomingRec =
                 recList.stream()
+                        .filter(java.util.Objects::nonNull)
                         .filter(rs -> {
                             java.time.LocalDate next = rs.getNextDueDate();
                             return next != null
@@ -212,7 +302,7 @@ private void initNoticeBoard() {
             java.time.LocalDate due = rs.getNextDueDate();
             if (due == null) continue;
 
-            if (currentDate == null || !currentDate.equals(due)) {
+            if (!due.equals(currentDate)) {
                 currentDate = due;
                 noticeBoard.addDate(due.toString());
             }
@@ -229,7 +319,7 @@ private void initNoticeBoard() {
             }
 
             noticeBoard.addNoticeBoard(new ModelNoticeBoard(
-                    new Color(0, 102, 204),   // xanh dương cho recurring
+                    new java.awt.Color(0, 102, 204),
                     title,
                     time,
                     desc
@@ -239,11 +329,66 @@ private void initNoticeBoard() {
 
     noticeBoard.scrollToTop();
 }
-
     private void showMessage(String message) {
         Message obj = new Message(Main.getFrames()[0], true);
         obj.showMessage(message);
     }
+private void addSpendingLimitNotice(java.time.LocalDate today) {
+    // Nếu chưa bật hạn mức thì thôi
+    if (!Form_BudgetSettings.isLimitEnabled()) {
+        return;
+    }
+
+    BigDecimal limit = Form_BudgetSettings.getCurrentLimit();
+    if (limit == null || limit.compareTo(BigDecimal.ZERO) <= 0) {
+        return;
+    }
+
+    int month = today.getMonthValue();
+    int year  = today.getYear();
+
+    // Dùng service có sẵn để lấy tổng chi tháng
+    BigDecimal spent = AppContext.transactionService
+            .getTotalExpenseMonth(month, year);
+    if (spent == null) spent = BigDecimal.ZERO;
+
+    // Đảm bảo dương
+    if (spent.signum() < 0) {
+        spent = spent.negate();
+    }
+
+    if (limit.compareTo(BigDecimal.ZERO) == 0) return;
+
+    BigDecimal percent = spent
+            .multiply(BigDecimal.valueOf(100))
+            .divide(limit, 0, java.math.RoundingMode.HALF_UP);
+
+    int warn = Form_BudgetSettings.getWarnPercent();
+
+    DecimalFormat df = new DecimalFormat("#,##0");
+    String title = "Hạn mức chi tiêu tháng " + month + "/" + year;
+    String time  = "";
+    String desc  = "Đã chi: " + df.format(spent) + " / Hạn mức: "
+                 + df.format(limit) + " (" + percent.toPlainString() + "%)";
+
+    Color color;
+    int p = percent.intValue();
+    if (p >= 100) {
+        color = new Color(220, 53, 69);        // đỏ: vượt hạn mức
+    } else if (p >= warn) {
+        color = new Color(255, 193, 7);        // vàng: sắp chạm
+    } else {
+        color = new Color(40, 167, 69);        // xanh: an toàn
+    }
+
+    // Ở đây mình KHÔNG addDate nữa, để dùng chung date header với phần nợ
+    noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+            color,
+            title,
+            time,
+            desc
+    ));
+}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
