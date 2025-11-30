@@ -34,6 +34,7 @@ import com.raven.form.Form_Transfer;
 import java.time.LocalDate;
 import com.mycompany.appquanlychitieu.model.RecurringSchedule;
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
+import com.raven.form.Form_RecurringSchedules;
 public class Main extends javax.swing.JFrame {
     public static DataStore dataStore;
     private MigLayout layout;
@@ -77,6 +78,8 @@ public class Main extends javax.swing.JFrame {
                 main.showForm(new Form_Transactions(AppContext.transactionService));
             } else if (subMenuIndex == 2) {
                 main.showForm(new Form_Categories(AppContext.categoryService));
+            } else if (subMenuIndex == 3) {
+                  main.showForm(new Form_RecurringSchedules());
             }
 
         } else if (menuIndex == 2) {
