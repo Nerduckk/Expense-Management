@@ -15,6 +15,7 @@ public class Form_AccountSettings extends JPanel {
     private JPasswordField txtConfirmPass;
     private JButton btnSaveProfile;
     private JButton btnChangePassword;
+    private JButton btnChangeAvatar;
 
     public Form_AccountSettings() {
         initComponents();
@@ -26,6 +27,7 @@ public class Form_AccountSettings extends JPanel {
     setOpaque(false);
 
     JLabel lblTitleProfile = new JLabel("Thông tin tài khoản");
+    btnChangeAvatar = new JButton("Đổi ảnh đại diện");
     lblTitleProfile.setFont(lblTitleProfile.getFont().deriveFont(Font.BOLD, 16f));
 
     JLabel lblName = new JLabel("Tên hiển thị:");
@@ -181,4 +183,25 @@ public class Form_AccountSettings extends JPanel {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private void onChangeAvatar() {
+    User u = AppContext.getCurrentUser();
+    if (u == null) {
+        JOptionPane.showMessageDialog(this, "Bạn chưa đăng nhập.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    JFileChooser chooser = new JFileChooser();
+    int result = chooser.showOpenDialog(this);
+    if (result == JFileChooser.APPROVE_OPTION) {
+        String path = chooser.getSelectedFile().getAbsolutePath();
+
+        // Nếu User có field avatarPath thì lưu lại:
+        // u.setAvatarPath(path);
+        // DataStore.saveData();
+
+        if (AppContext.getHeader() != null) {
+            AppContext.getHeader().setUserAvatar(path);
+        }
+    }
+}
 }
