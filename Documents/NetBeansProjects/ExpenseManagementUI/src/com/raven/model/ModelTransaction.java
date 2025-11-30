@@ -10,17 +10,11 @@ import java.text.DecimalFormat;
 import javax.swing.Icon;
 
 public class ModelTransaction {
-
     private Icon icon;
-    // Mô tả giao dịch (note hoặc name)
     private String description;
-    // Loại: Thu nhập / Chi tiêu / Khác
     private String type;
-    // Tên ví / tài khoản
     private String walletName;
-    // Số tiền
     private double amount;
-    // Giao dịch thật ở backend
     private AbstractTransaction rawTransaction;
 
     public ModelTransaction() {
