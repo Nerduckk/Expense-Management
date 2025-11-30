@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.toedter.calendar.JDateChooser;
+import java.util.Date;
+import java.time.ZoneId;
 
 /**
  * Quản lý các RecurringSchedule (giao dịch định kỳ).
@@ -28,7 +31,7 @@ public class Form_RecurringSchedules extends JPanel {
 
     private final JTextField txtName;
     private final JTextField txtAmount;
-    private final JTextField txtStartDate;
+    private final JDateChooser dcStartDate;
     private final JComboBox<Account> cbAccount;
     private final JComboBox<Category> cbCategory;
     private final JComboBox<CycleType> cbCycle;
@@ -75,7 +78,9 @@ public class Form_RecurringSchedules extends JPanel {
 
         txtName = new JTextField(20);
         txtAmount = new JTextField(20);
-        txtStartDate = new JTextField(20);
+        dcStartDate = new JDateChooser();
+        dcStartDate.setDateFormatString("yyyy-MM-dd");  // hiển thị đẹp
+        dcStartDate.setOpaque(false);
 
         cbAccount = new JComboBox<>();
         cbCategory = new JComboBox<>();
@@ -102,7 +107,7 @@ public class Form_RecurringSchedules extends JPanel {
         g.gridx = 0; g.gridy = row; g.weightx = 0;
         formPanel.add(new JLabel("Ngày bắt đầu (yyyy-MM-dd):"), g);
         g.gridx = 1; g.weightx = 1;
-        formPanel.add(txtStartDate, g); row++;
+        formPanel.add(dcStartDate, g); row++;
 
         g.gridx = 0; g.gridy = row; g.weightx = 0;
         formPanel.add(new JLabel("Tài khoản:"), g);
@@ -206,7 +211,7 @@ public class Form_RecurringSchedules extends JPanel {
         editing = null;
         txtName.setText("");
         txtAmount.setText("");
-        txtStartDate.setText("");
+        dcStartDate.setDate(null);
         cbAccount.setSelectedIndex(cbAccount.getItemCount() > 0 ? 0 : -1);
         cbCategory.setSelectedIndex(cbCategory.getItemCount() > 0 ? 0 : -1);
         cbCycle.setSelectedIndex(0);
@@ -226,8 +231,11 @@ public class Form_RecurringSchedules extends JPanel {
 
         txtName.setText(rs.getName() == null ? "" : rs.getName());
         txtAmount.setText(rs.getAmount() == null ? "" : rs.getAmount().toPlainString());
-        txtStartDate.setText(rs.getStartDate() == null ? "" : rs.getStartDate().format(dateFmt));
-
+        if (rs.getStartDate() != null) {
+        dcStartDate.setDate(java.sql.Date.valueOf(rs.getStartDate()));
+        } else {
+            dcStartDate.setDate(null);
+        }
         cbAccount.setSelectedItem(rs.getAccount());
         cbCategory.setSelectedItem(rs.getCategory());
         cbCycle.setSelectedItem(rs.getCycle());
@@ -258,8 +266,7 @@ public class Form_RecurringSchedules extends JPanel {
         try {
             String name = txtName.getText().trim();
             String amountStr = txtAmount.getText().trim();
-            String startStr = txtStartDate.getText().trim();
-
+            Date selected = dcStartDate.getDate();
             if (name.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Tên không được để trống.");
                 return;
@@ -268,14 +275,14 @@ public class Form_RecurringSchedules extends JPanel {
                 JOptionPane.showMessageDialog(this, "Số tiền không được để trống.");
                 return;
             }
-            if (startStr.isEmpty()) {
+            if (selected == null) {
                 JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được để trống.");
                 return;
             }
-
             BigDecimal amount = new BigDecimal(amountStr);
-            LocalDate start = LocalDate.parse(startStr, dateFmt);
-
+            LocalDate start = selected.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
             Account acc = (Account) cbAccount.getSelectedItem();
             Category cat = (Category) cbCategory.getSelectedItem();
             CycleType cycle = (CycleType) cbCycle.getSelectedItem();
