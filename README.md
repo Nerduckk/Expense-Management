@@ -71,5 +71,5 @@
 | 1 | **Nguyễn Tiến Đạt** | B23DCDT059 | Thành viên | AbtractTransaction, RecurringSchedule, NormalTransaction, CycleType |
 | 2 | **Dương Quốc Hoàng** | B23DCVT168 | Thành viên | ... |
 | 3 | **Đỗ Minh Tiến** | B23DCDT254 | Thành viên | ... |
-| 4 | **Lê Anh Việt** | B23DCVT453 | Trưởng nhóm | Xử lý DAO, Thiết kế giao diện chuẩn CRUD, Thiết kế mô hình dữ liệu, Xử lý Service|
+| 4 | **Lê Anh Việt** | B23DCVT453 | Trưởng nhóm | Xử lý DAO, Thiết kế giao diện chuẩn CRUD, Thiết kế mô hình dữ liệu, Xử lý Service, Debugger|
 | 5 | **Nguyễn Hoàng Anh Đức** | B23DCVT097 | Thành viên | ... |
