@@ -64,7 +64,8 @@ public class Menu extends PanelTransparent {
             "Giao dịch",
             "Danh sách",
             "Thêm mới",
-            "Định kỳ"
+            "Danh Mục Thu Chi",
+            "Lịch định kỳ"
     ));
 
     // 2 - Ví
