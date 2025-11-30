@@ -2,9 +2,9 @@ package com.raven.component;
 
 import com.raven.swing.PanelTransparent;
 import java.awt.event.ActionListener;
-
+import javax.swing.ImageIcon;
+import java.awt.Image;
 public class Header extends PanelTransparent {
-
     public Header() {
         initComponents();
         setTransparent(0.5f);
@@ -18,6 +18,33 @@ public class Header extends PanelTransparent {
     }
     public void setRole(String role) {
         lbRole.setText(role);
+    }
+    public void setUserAvatar(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) return;
+
+        ImageIcon src = new ImageIcon(imagePath);
+
+        // Scale ảnh cho vừa với kích thước avatar hiện tại
+        int w = pic.getWidth() > 0 ? pic.getWidth() : 38;
+        int h = pic.getHeight() > 0 ? pic.getHeight() : 38;
+
+        Image scaled = src.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        ImageIcon iconScaled = new ImageIcon(scaled);
+
+        pic.setIcon(iconScaled);
+        // nếu ImageAvatar có setImage(Image) thì có thể dùng:
+        // pic.setImage(scaled);
+        repaint();
+    }
+    public void setUserAvatar(ImageIcon icon) {
+        if (icon == null) return;
+
+        int w = pic.getWidth() > 0 ? pic.getWidth() : 38;
+        int h = pic.getHeight() > 0 ? pic.getHeight() : 38;
+
+        Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        pic.setIcon(new ImageIcon(scaled));
+        repaint();
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
