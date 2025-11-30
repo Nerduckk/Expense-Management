@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.awt.Frame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+
 import com.mycompany.appquanlychitieu.model.NormalTransaction;
 
 
@@ -63,52 +64,15 @@ private void initTableData() {
     tableEvent = new EventAction() {
         @Override
         public void delete(ModelTransaction tx) {
-            // Hỏi xác nhận trước khi xóa
-            int opt = JOptionPane.showConfirmDialog(
-                    Form_Home.this,
-                    "Xóa giao dịch:\n" + tx.getDescription() + " ?",
-                    "Xác nhận xóa",
-                    JOptionPane.YES_NO_OPTION
-            );
-            if (opt != JOptionPane.YES_OPTION) {
-                return;    // người dùng bấm NO / Cancel -> không làm gì
-            }
-
             transactionService.deleteTransaction(tx.getRawTransaction());
-            DataStore.saveData();
-            reloadTable();
-            initCardData();   // cập nhật lại các card tổng thu/chi/số dư
+            DataStore.saveData();  
             showMessage("Đã xoá giao dịch: " + tx.getDescription());
+            reloadTable();        
         }
 
         @Override
         public void update(ModelTransaction tx) {
-            // Sửa giao dịch
-            AbstractTransaction raw = tx.getRawTransaction();
-            if (!(raw instanceof NormalTransaction)) {
-                JOptionPane.showMessageDialog(
-                        Form_Home.this,
-                        "Giao dịch này là CHUYỂN TIỀN hoặc loại đặc biệt.\n"
-                        + "Hiện tại chỉ sửa được giao dịch Thu/Chi.\n"
-                        + "Nếu muốn chỉnh, hãy sửa trong các form tương ứng.",
-                        "Không thể sửa",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-                return;
-            }
-
-            Frame parent = (Frame) SwingUtilities.getWindowAncestor(Form_Home.this);
-            Dialog_Transaction dlg = new Dialog_Transaction(
-                    parent,
-                    true,
-                    transactionService,
-                    raw      // ở đây chắc chắn là NormalTransaction
-            );
-            dlg.setVisible(true);
-
-            // Sau khi dialog đóng, reload lại dữ liệu
-            reloadTable();
-            initCardData();
+            showMessage("Chức năng cập nhật chưa hỗ trợ.");
         }
     };
 
@@ -152,11 +116,9 @@ private void initNoticeBoard() {
     java.time.LocalDate today = java.time.LocalDate.now();
     java.time.LocalDate to = today.plusDays(7);
 
-    // Lấy list Debt từ DataStore (sẽ thêm ở bước 2)
     java.util.List<com.mycompany.appquanlychitieu.model.Debt> allDebts =
             com.mycompany.appquanlychitieu.service.DataStore.debts;
 
-    // Nếu chưa có dữ liệu nợ nào
     if (allDebts == null || allDebts.isEmpty()) {
         noticeBoard.addDate(today.toString());
         noticeBoard.addNoticeBoard(new ModelNoticeBoard(
@@ -165,27 +127,7 @@ private void initNoticeBoard() {
                 "",
                 "Hiện tại bạn chưa ghi nhận khoản nợ nào trong hệ thống."
         ));
-        noticeBoard.scrollToTop();
-        return;
-    }
 
-    // Lọc các khoản nợ đang ACTIVE và đến hạn trong 7 ngày tới
-    java.util.List<com.mycompany.appquanlychitieu.model.Debt> upcoming =
-            allDebts.stream()
-                    .filter(java.util.Objects::nonNull)
-                    .filter(d -> d.getStatus() == com.mycompany.appquanlychitieu.model.DebtStatus.ACTIVE)
-                    .filter(d -> {
-                        java.time.LocalDate due = d.getDueDate();
-                        return due != null
-                                && !due.isBefore(today)
-                                && !due.isAfter(to);
-                    })
-                    .sorted(java.util.Comparator.comparing(
-                            com.mycompany.appquanlychitieu.model.Debt::getDueDate))
-                    .toList();
-
-    if (upcoming.isEmpty()) {
-        noticeBoard.addDate(today.toString());
         noticeBoard.addNoticeBoard(new ModelNoticeBoard(
                 new Color(0, 153, 51),
                 "Không có khoản nợ sắp đến hạn",
@@ -196,10 +138,31 @@ private void initNoticeBoard() {
         return;
     }
 
-    // Gom theo ngày đến hạn và đổ ra NoticeBoard
+    java.util.List<com.mycompany.appquanlychitieu.model.Debt> upcoming =
+            allDebts.stream()
+                    .filter(d -> d.getDueDate() != null
+                            && !d.getDueDate().isBefore(today)
+                            && !d.getDueDate().isAfter(to))
+                    .sorted(java.util.Comparator.comparing(
+                            com.mycompany.appquanlychitieu.model.Debt::getDueDate
+                    ))
+                    .toList();
+
+    if (upcoming.isEmpty()) {
+        noticeBoard.addDate(today.toString());
+        noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                new Color(0, 153, 51),
+                "Không có khoản nợ sắp đến hạn",
+                "",
+                "Trong 7 ngày tới không có khoản nợ nào đến hạn."
+        ));
+        // KHÔNG return nữa, để còn show recurring schedule bên dưới
+    }
+
     java.time.LocalDate currentDate = null;
     java.text.DecimalFormat fmt = new java.text.DecimalFormat("#,##0");
 
+    // ====== PHẦN NỢ ======
     for (com.mycompany.appquanlychitieu.model.Debt d : upcoming) {
         java.time.LocalDate due = d.getDueDate();
         if (currentDate == null || !currentDate.equals(due)) {
@@ -214,9 +177,9 @@ private void initNoticeBoard() {
             title = "Thu nợ từ " + d.getPersonName();
         }
 
-        String time = "";   // nếu muốn có thể đặt "23:59" hay gì đó
+        String time = "";
         String desc = "Số tiền còn lại: " + fmt.format(d.getRemainingAmount())
-                    + " / Gốc: " + fmt.format(d.getPrincipalAmount());
+                + " / Gốc: " + fmt.format(d.getPrincipalAmount());
 
         noticeBoard.addNoticeBoard(new ModelNoticeBoard(
                 new Color(238, 46, 57),
@@ -226,8 +189,57 @@ private void initNoticeBoard() {
         ));
     }
 
+    // ====== PHẦN GIAO DỊCH ĐỊNH KỲ ======
+    java.util.List<com.mycompany.appquanlychitieu.model.RecurringSchedule> recList =
+            com.mycompany.appquanlychitieu.service.DataStore.recurringSchedules;
+
+    if (recList != null && !recList.isEmpty()) {
+        java.util.List<com.mycompany.appquanlychitieu.model.RecurringSchedule> upcomingRec =
+                recList.stream()
+                        .filter(rs -> {
+                            java.time.LocalDate next = rs.getNextDueDate();
+                            return next != null
+                                    && !next.isBefore(today)
+                                    && !next.isAfter(to)
+                                    && rs.isActiveOn(next);
+                        })
+                        .sorted(java.util.Comparator.comparing(
+                                com.mycompany.appquanlychitieu.model.RecurringSchedule::getNextDueDate
+                        ))
+                        .toList();
+
+        for (com.mycompany.appquanlychitieu.model.RecurringSchedule rs : upcomingRec) {
+            java.time.LocalDate due = rs.getNextDueDate();
+            if (due == null) continue;
+
+            if (currentDate == null || !currentDate.equals(due)) {
+                currentDate = due;
+                noticeBoard.addDate(due.toString());
+            }
+
+            String title = "Giao dịch định kỳ: " + rs.getName();
+            String time = "";
+            String amountStr = (rs.getAmount() == null)
+                    ? "0"
+                    : fmt.format(rs.getAmount());
+
+            String desc = "Số tiền: " + amountStr;
+            if (rs.getAccount() != null) {
+                desc += " | Tài khoản: " + rs.getAccount().getName();
+            }
+
+            noticeBoard.addNoticeBoard(new ModelNoticeBoard(
+                    new Color(0, 102, 204),   // xanh dương cho recurring
+                    title,
+                    time,
+                    desc
+            ));
+        }
+    }
+
     noticeBoard.scrollToTop();
 }
+
     private void showMessage(String message) {
         Message obj = new Message(Main.getFrames()[0], true);
         obj.showMessage(message);
