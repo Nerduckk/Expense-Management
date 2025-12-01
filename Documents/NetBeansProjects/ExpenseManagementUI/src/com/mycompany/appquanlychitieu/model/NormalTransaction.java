@@ -19,12 +19,12 @@ public class NormalTransaction extends AbstractTransaction{
     
     // Constructor rỗng (để RecurringSchedule dùng)
     public NormalTransaction() {
-        super(null, BigDecimal.ZERO, LocalDate.now()); // Gọi constructor cha giả
+        super(null, BigDecimal.ZERO, LocalDate.now()); 
     }
     
-    // Constructor đầy đủ
+
     public NormalTransaction(Long id, BigDecimal amount, LocalDate date, Account account, Category category) {
-        super(id, amount, date); // Đẩy lên AbstractTransaction
+        super(id, amount, date); 
         this.account = account;
         this.category = category;
     }
@@ -46,7 +46,7 @@ public class NormalTransaction extends AbstractTransaction{
         if(category != null)
             this.category = category;
     }
-    // Implement các hàm thiếu
+
     @Override
     public boolean isIncome() {
         return category != null && category.getType() == CategoryType.INCOME;
