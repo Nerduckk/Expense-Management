@@ -17,8 +17,6 @@ public class RecurringSchedule extends BaseEntity {
     private boolean autoCreate;     // có tự tạo giao dịch không
     private LocalDate endDate;      // ngày kết thúc (có thể null)
 
-    // ===== CONSTRUCTORS =====
-
     // Constructor rỗng – dùng cho DataStore hoặc tạo rồi set dần
     public RecurringSchedule() {
         super(null, "Recurring");
@@ -51,8 +49,6 @@ public class RecurringSchedule extends BaseEntity {
         this.autoCreate = autoCreate;
         this.endDate = endDate;
     }
-
-    // ===== GETTERS / SETTERS =====
 
     public Account getAccount() { return account; }
     public void setAccount(Account account) { this.account = account; }
@@ -102,7 +98,7 @@ public class RecurringSchedule extends BaseEntity {
     /** Tính ngày đến hạn tiếp theo dựa trên startDate + paidTerms */
     public LocalDate getNextDueDate() {
         if (startDate == null) return null;
-        int termIndex = (paidTerms == null) ? 0 : paidTerms; // 0-based
+        int termIndex = (paidTerms == null) ? 0 : paidTerms; 
         LocalDate next = startDate;
 
         switch (cycle) {
