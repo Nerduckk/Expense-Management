@@ -6,7 +6,6 @@ import com.mycompany.appquanlychitieu.service.CategoryService;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
-import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -25,7 +24,6 @@ public class Dialog_Category extends JDialog {
     private JComboBox<CategoryType> comboType;
     private JTextField txtIcon;
     private JTextField txtColor;
-    private JTextField txtBudget;
     private JButton btnSave;
     private JButton btnCancel;
 
@@ -70,10 +68,6 @@ public class Dialog_Category extends JDialog {
         txtColor = new JTextField();
         form.add(txtColor);
 
-        form.add(new JLabel("Hạn mức (optional):"));
-        txtBudget = new JTextField();
-        form.add(txtBudget);
-
         JPanel bottom = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         btnSave = new JButton("Lưu");
         btnCancel = new JButton("Hủy");
@@ -92,8 +86,6 @@ public class Dialog_Category extends JDialog {
         comboType.setSelectedItem(editingCategory.getType());
         txtIcon.setText(editingCategory.getIcon());
         txtColor.setText(editingCategory.getColor());
-        BigDecimal limit = editingCategory.getBudgetLimit();
-        txtBudget.setText(limit == null ? "" : limit.toPlainString());
     }
 
     private void onSave() {
@@ -118,26 +110,14 @@ public class Dialog_Category extends JDialog {
             color = "#" + color;
         }
 
-        BigDecimal budget = null;
-        String budgetStr = txtBudget.getText().trim();
-        if (!budgetStr.isEmpty()) {
-            try {
-                budget = new BigDecimal(budgetStr);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Hạn mức không hợp lệ");
-                return;
-            }
-        }
-
         if (editingCategory == null) {
-            Category c = new Category(name, type, icon, color, budget);
+            Category c = new Category(name, type, icon, color,null);
             categoryService.add(c);
         } else {
             editingCategory.setName(name);
             editingCategory.setType(type);
             editingCategory.setIcon(icon);
             editingCategory.setColor(color);
-            editingCategory.setBudgetLimit(budget);
             categoryService.saveChanges();
         }
 
