@@ -55,11 +55,12 @@ public class Form_Categories extends JPanel {
         btnDelete = new JButton("Xóa");
         btnRefresh = new JButton("↻ Làm mới");
 
-        String[] columns = {"Tên", "Loại", "Icon", "Màu", "Hạn mức"};
+        String[] columns = {"Tên", "Loại", "Icon", "Màu"};
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) { return false; }
+        @Override
+        public boolean isCellEditable(int r, int c) { return false; }
         };
+
         table = new JTable(tableModel);
         table.setRowHeight(26);
         JScrollPane scroll = new JScrollPane(table);
@@ -117,25 +118,24 @@ public class Form_Categories extends JPanel {
     }
 
     private void loadCategoriesToTable() {
-        tableModel.setRowCount(0);
-        DecimalFormat df = new DecimalFormat("#,##0.##");
+    tableModel.setRowCount(0);
+    DecimalFormat df = new DecimalFormat("#,##0.##");
 
-        List<Category> list = categoryService.getAll();
-        for (Category c : list) {
-            if (c == null) continue;
-            String type = c.getType() == CategoryType.INCOME ? "Thu nhập" : "Chi tiêu";
-            BigDecimal limit = c.getBudgetLimit();
-            String limitStr = limit == null ? "" : df.format(limit);
-            tableModel.addRow(new Object[]{
-                    c.getName(),
-                    type,
-                    c.getIcon(),
-                    c.getColor(),
-                    limitStr
-            });
-        }
+    List<Category> list = categoryService.getAll();
+    for (Category c : list) {
+        if (c == null) continue;
+        String type = c.getType() == CategoryType.INCOME ? "Thu nhập" : "Chi tiêu";
+        BigDecimal limit = c.getBudgetLimit();
+        String limitStr = limit == null ? "" : df.format(limit);
+        tableModel.addRow(new Object[]{
+                c.getName(),
+                type,
+                c.getIcon(),
+                c.getColor(),
+                limitStr
+        });
     }
-
+}
     private void openDialog(Category cat) {
         Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
         Dialog_Category dlg = new Dialog_Category(parent, true, categoryService, cat);

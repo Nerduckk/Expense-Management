@@ -1,7 +1,6 @@
 package com.raven.form;
 
 import com.mycompany.appquanlychitieu.model.Debt;
-import com.mycompany.appquanlychitieu.model.DebtStatus;
 import com.mycompany.appquanlychitieu.model.DebtType;
 import com.mycompany.appquanlychitieu.service.DebtService;
 import com.mycompany.appquanlychitieu.service.DataStore;
@@ -9,9 +8,11 @@ import com.mycompany.appquanlychitieu.service.DataStore;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.FlowLayout;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.time.ZoneId;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,13 +22,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import com.toedter.calendar.JDateChooser;
-import java.awt.FlowLayout;
-import java.util.Date;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import javax.swing.SwingUtilities;
 
+import com.toedter.calendar.JDateChooser;
 
 public class Dialog_Debt extends JDialog {
 
@@ -39,8 +36,7 @@ public class Dialog_Debt extends JDialog {
     private JTextField txtPerson;
     private JTextField txtPrincipal;
     private JTextField txtInterest;
-    private JDateChooser dateDueChooser;  
-    private JComboBox<DebtStatus> comboStatus;
+    private JDateChooser dateDueChooser;   // JCalendar
 
     public Dialog_Debt(Frame parent,
                        boolean modal,
@@ -69,7 +65,7 @@ public class Dialog_Debt extends JDialog {
         txtName = new JTextField();
         mainPanel.add(txtName);
 
-        // Loại
+        // Loại (BORROWING / LENDING)
         mainPanel.add(new JLabel("Loại:"));
         comboType = new JComboBox<>(DebtType.values());
         mainPanel.add(comboType);
@@ -89,23 +85,16 @@ public class Dialog_Debt extends JDialog {
         txtInterest = new JTextField();
         mainPanel.add(txtInterest);
 
-        // Ngày đến hạn
+        // Ngày đến hạn (JCalendar)
         mainPanel.add(new JLabel("Ngày đến hạn:"));
-
         dateDueChooser = new JDateChooser();
-        dateDueChooser.setDateFormatString("dd/MM/yyyy");      // hiển thị đẹp kiểu VN
+        dateDueChooser.setDateFormatString("dd/MM/yyyy");      // hiển thị kiểu VN
         dateDueChooser.setPreferredSize(new java.awt.Dimension(120, 24));
-        // Có thể set default là ngày hôm nay:
-        dateDueChooser.setDate(new Date());
+        dateDueChooser.setDate(new Date());                    // default = hôm nay
         mainPanel.add(dateDueChooser);
 
-
-        // Trạng thái
-        mainPanel.add(new JLabel("Trạng thái:"));
-        comboStatus = new JComboBox<>(DebtStatus.values());
-        mainPanel.add(comboStatus);
-
-        JPanel buttonPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        // Panel nút
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnCancel = new JButton("Hủy");
         JButton btnHistory = new JButton("Lịch sử trả/thu");
         JButton btnSave = new JButton("Lưu");
@@ -137,13 +126,11 @@ public class Dialog_Debt extends JDialog {
             txtInterest.setText(editingDebt.getInterestRate().toString());
         }
         if (editingDebt.getDueDate() != null) {
-        LocalDate ld = editingDebt.getDueDate();
-        Date d = Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        dateDueChooser.setDate(d);
+            LocalDate ld = editingDebt.getDueDate();
+            Date d = Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            dateDueChooser.setDate(d);
         }
-
-        comboStatus.setSelectedItem(editingDebt.getStatus());
-        }
+    }
 
     private void onSave() {
         String name = txtName.getText().trim();
@@ -176,17 +163,16 @@ public class Dialog_Debt extends JDialog {
             }
         }
 
-        // Ngày đến hạn
+        // Ngày đến hạn (lấy từ JDateChooser)
         Date utilDate = dateDueChooser.getDate();
         if (utilDate == null) {
-           JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày đến hạn.");
-        return;
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày đến hạn.");
+            return;
         }
 
         LocalDate dueDate = utilDate.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate();
-        DebtStatus status = (DebtStatus) comboStatus.getSelectedItem();
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
 
         if (editingDebt == null) {
             long newId = DataStore.debts.stream()
@@ -197,7 +183,7 @@ public class Dialog_Debt extends JDialog {
             Debt d = new Debt(newId, name, type, principal, person);
             d.setInterestRate(interest);
             d.setDueDate(dueDate);
-            d.setStatus(status);
+            // status mặc định = ACTIVE trong constructor Debt
 
             debtService.add(d);
         } else {
@@ -207,7 +193,7 @@ public class Dialog_Debt extends JDialog {
             editingDebt.setPrincipalAmount(principal);
             editingDebt.setInterestRate(interest);
             editingDebt.setDueDate(dueDate);
-            editingDebt.setStatus(status);
+            // status giữ nguyên, Dialog_PayDebt sẽ đổi sang COMPLETED nếu trả hết
 
             debtService.update(editingDebt);
         }
@@ -219,19 +205,20 @@ public class Dialog_Debt extends JDialog {
     private void showError(String m) {
         JOptionPane.showMessageDialog(this, m, "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
-    private void openHistory() {
-    if (editingDebt == null || editingDebt.getId() == null) {
-        JOptionPane.showMessageDialog(
-                this,
-                "Chỉ xem lịch sử cho khoản nợ đã được lưu.",
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-        return;
-    }
 
-    Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
-    Dialog_DebtHistory dlg = new Dialog_DebtHistory(parent, true, editingDebt);
-    dlg.setVisible(true);
-}
+    private void openHistory() {
+        if (editingDebt == null || editingDebt.getId() == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Chỉ xem lịch sử cho khoản nợ đã được lưu.",
+                    "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
+        Dialog_DebtHistory dlg = new Dialog_DebtHistory(parent, true, editingDebt);
+        dlg.setVisible(true);
+    }
 }
